@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create an Account | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem 4.5rem; max-width: 580px;">
+    <div class="card-glass" style="padding: 2.5rem; border-color: rgba(99, 102, 241, 0.3);">
+        <div class="text-center mb-4">
+            <div class="brand-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.4rem;">
+                <i class="fa-solid fa-bolt-lightning"></i>
+            </div>
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff;">Join LancerPulse</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Join top developers, creators, and clients building together</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Select Your Primary Role</label>
+                {{ form.role }}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                {{ form.username }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                {{ form.email }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Professional Headline / Role Description</label>
+                {{ form.headline }}
+                <small class="text-muted">e.g. Senior Full-Stack Django Developer or Founder @ TechStartup</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.help_text %}
+                    <small class="text-muted" style="display: block; margin-top: 4px;">{{ form.password1.help_text }}</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                {{ form.password2 }}
+            </div>
+
+            {% if form.errors %}
+                <div class="alert alert-error" style="border-radius: var(--radius-md);">
+                    Please check the errors above.
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                <i class="fa-solid fa-sparkles"></i> Create Free Account
+            </button>
+        </form>
+
+        <div class="text-center mt-4" style="font-size: 0.9rem; color: var(--text-muted);">
+            Already have an account? 
+            <a href="{% url 'login' %}" style="color: var(--primary-500); font-weight: 600;">Log In</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

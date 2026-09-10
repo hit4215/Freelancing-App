@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Freelancer Directory & Networking Hub | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 2rem;">
+        <div class="hero-badge"><i class="fa-solid fa-users-viewfinder"></i> Talent Directory & Peer Networking</div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">Elite Freelancers & Creators</h1>
+        <p style="color: var(--text-muted); font-size: 1rem;">
+            Discover top-rated developers, designers, AI engineers, and digital craftsmen. Hire directly or network peer-to-peer to build high-value partnerships.
+        </p>
+    </div>
+
+    <!-- Search and Filter Card -->
+    <div class="card-glass mb-4" style="padding: 1.5rem;">
+        <form method="GET" action="{% url 'freelancers' %}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+                <div>
+                    <label class="form-label" style="font-size: 0.82rem;">Search Freelancer</label>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Name, headline, bio...">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.82rem;">Primary Skill</label>
+                    <select name="skill" class="form-control" aria-label="Filter by Primary Skill">
+                        <option value="">All Skills</option>
+                        {% for s in skills %}
+                            <option value="{{ s.name }}" {% if selected_skill == s.name %}selected{% endif %}>{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.82rem;">Experience Level</label>
+                    <select name="experience" class="form-control" aria-label="Filter by Experience Level">
+                        <option value="">Any Experience</option>
+                        <option value="ENTRY" {% if selected_experience == 'ENTRY' %}selected{% endif %}>Entry Level</option>
+                        <option value="INTERMEDIATE" {% if selected_experience == 'INTERMEDIATE' %}selected{% endif %}>Intermediate</option>
+                        <option value="EXPERT" {% if selected_experience == 'EXPERT' %}selected{% endif %}>Expert</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <div style="flex: 1;">
+                        <label class="form-label" style="font-size: 0.82rem;">Min Rate ($)</label>
+                        <input type="number" name="min_rate" value="{{ min_rate }}" class="form-control" placeholder="20">
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label" style="font-size: 0.82rem;">Max Rate ($)</label>
+                        <input type="number" name="max_rate" value="{{ max_rate }}" class="form-control" placeholder="150">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fa-solid fa-filter"></i> Search
+                    </button>
+                    {% if search_query or selected_skill or selected_experience or min_rate or max_rate %}
+                        <a href="{% url 'freelancers' %}" class="btn btn-outline" title="Reset">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Freelancers Count -->
+    <div style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-muted);">
+        Found <strong style="color: #fff;">{{ page_obj.paginator.count }}</strong> verified specialists
+    </div>
+
+    <!-- Grid -->
+    <div class="freelancer-grid">
+        {% for fl in page_obj %}
+            <div class="card-glass card-interactive freelancer-card">
+                <div>
+                    <div class="freelancer-header">
+                        <div class="freelancer-avatar-wrap">
+                            <img src="{{ fl.avatar_display }}" alt="{{ fl.username }}" class="freelancer-avatar">
+                            <span class="status-indicator {% if not fl.is_available_for_hire %}busy{% endif %}" title="{% if fl.is_available_for_hire %}Available for Hire{% else %}Currently Busy{% endif %}"></span>
+                        </div>
+                        <div class="freelancer-info">
+                            <div class="freelancer-name">
+                                <a href="{% url 'profile' username=fl.username %}">{{ fl.get_full_name|default:fl.username }}</a>
+                                <i class="fa-solid fa-circle-check verified-icon" title="Verified Specialist"></i>
+                            </div>
+                            <div class="freelancer-headline">{{ fl.headline|default:"Senior Digital Specialist" }}</div>
+                            <div class="freelancer-metrics">
+                                <span class="rating-badge">
+                                    <i class="fa-solid fa-star"></i> {{ fl.average_rating }}
+                                </span>
+                                <span>({{ fl.review_count }} reviews)</span>
+                                <span><i class="fa-solid fa-medal text-emerald"></i> {{ fl.job_success_score }}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="freelancer-bio mt-2">
+                        {{ fl.bio|default:"Dedicated specialist bringing clean, high-performance solutions and reliable communication." }}
+                    </p>
+
+                    <div class="skills-wrap mt-2">
+                        {% for skill in fl.skills.all|slice:":4" %}
+                            <span class="skill-tag">{{ skill.name }}</span>
+                        {% empty %}
+                            <span class="skill-tag">Web Development</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="freelancer-footer">
+                    <div>
+                        <div class="rate-display">${{ fl.hourly_rate|floatformat:0 }}<span class="rate-sub">/hr</span></div>
+                        <div class="rate-sub"><i class="fa-solid fa-location-dot"></i> {{ fl.location|default:"Remote" }}</div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        {% if user.is_authenticated and user != fl %}
+                            <a href="{% url 'start_conversation' user_id=fl.id %}" class="btn btn-outline btn-sm" title="Contact / Network Directly">
+                                <i class="fa-solid fa-comment-dots"></i> Message
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'profile' username=fl.username %}" class="btn btn-primary btn-sm">
+                            View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="card-glass text-center" style="grid-column: 1 / -1; padding: 4rem 2rem;">
+                <i class="fa-solid fa-user-slash" style="font-size: 3rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                <h3 style="color: #fff;">No freelancers found</h3>
+                <p class="text-muted" style="margin: 0.5rem 0 1.5rem;">Try adjusting your search criteria or explore other skills.</p>
+                <a href="{% url 'freelancers' %}" class="btn btn-primary btn-sm">Reset Filters</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem;">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_skill %}&skill={{ selected_skill }}{% endif %}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            <span class="btn btn-ghost btn-sm" style="color: var(--text-muted);">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_skill %}&skill={{ selected_skill }}{% endif %}" class="btn btn-outline btn-sm">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}LancerPulse | Hire Elite Freelancers & Collaborate Globally{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-badge">
+            <i class="fa-solid fa-sparkles"></i> The Next-Gen Freelance & Networking Ecosystem
+        </div>
+        <h1 class="hero-title">
+            Where World-Class Talent <br>
+            <span class="text-gradient">Connects, Collaborates & Ships</span>
+        </h1>
+        <p class="hero-subtitle">
+            Direct client-to-freelancer hiring plus peer-to-peer freelancer networking. Build high-impact products, find freelance contracts, or team up with other skilled creators worldwide.
+        </p>
+
+        <!-- Dynamic Search Form -->
+        <form action="{% url 'job_list' %}" method="GET" class="hero-search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--primary-500); font-size: 1.1rem; margin-left: 0.5rem;"></i>
+            <input type="text" name="q" class="hero-search-input" placeholder="Search Python, AI, React, UI/UX, or project keywords..." aria-label="Search jobs">
+            <button type="submit" class="btn btn-primary btn-md">
+                Find Projects <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span style="color: var(--text-subtle); font-size: 0.85rem; align-self: center;">Popular:</span>
+            <a href="{% url 'job_list' %}?q=Django" class="skill-tag">Django</a>
+            <a href="{% url 'job_list' %}?q=Machine+Learning" class="skill-tag">Machine Learning</a>
+            <a href="{% url 'job_list' %}?q=React" class="skill-tag">React & Next.js</a>
+            <a href="{% url 'job_list' %}?q=UI/UX" class="skill-tag">UI/UX Design</a>
+            <a href="{% url 'job_list' %}?q=DevOps" class="skill-tag">DevOps & Cloud</a>
+        </div>
+
+        <!-- Live Platform Metrics -->
+        <div class="stats-grid">
+            <div class="stat-item card-interactive">
+                <div class="stat-num">{{ stats.freelancers_count|default:"2,500" }}+</div>
+                <div class="stat-label">Verified Specialists</div>
+            </div>
+            <div class="stat-item card-interactive">
+                <div class="stat-num">{{ stats.jobs_count|default:"1,200" }}+</div>
+                <div class="stat-label">Live Projects Posted</div>
+            </div>
+            <div class="stat-item card-interactive">
+                <div class="stat-num">${{ stats.completed_contracts|default:"980"|stringformat:"d" }}k+</div>
+                <div class="stat-label">Paid to Freelancers</div>
+            </div>
+            <div class="stat-item card-interactive">
+                <div class="stat-num">99.4%</div>
+                <div class="stat-label">Client Satisfaction</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+                <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff;">Explore By Category</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Discover vetted professionals across essential tech and creative disciplines</p>
+            </div>
+            <a href="{% url 'job_list' %}" class="btn btn-outline btn-sm">
+                View All Categories <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="categories-grid">
+            {% for cat in categories %}
+                <a href="{% url 'job_list' %}?category={{ cat.slug }}" class="category-card">
+                    <div class="cat-icon-wrap">
+                        <i class="{{ cat.icon }}"></i>
+                    </div>
+                    <div>
+                        <div class="cat-name">{{ cat.name }}</div>
+                        <div class="cat-count">{{ cat.job_count }} open projects</div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="category-card">
+                    <div class="cat-icon-wrap"><i class="fa-solid fa-code"></i></div>
+                    <div><div class="cat-name">Full-Stack Development</div><div class="cat-count">24 projects</div></div>
+                </div>
+                <div class="category-card">
+                    <div class="cat-icon-wrap"><i class="fa-solid fa-brain"></i></div>
+                    <div><div class="cat-name">AI & Data Science</div><div class="cat-count">18 projects</div></div>
+                </div>
+                <div class="category-card">
+                    <div class="cat-icon-wrap"><i class="fa-solid fa-palette"></i></div>
+                    <div><div class="cat-name">UI/UX & Product Design</div><div class="cat-count">15 projects</div></div>
+                </div>
+                <div class="category-card">
+                    <div class="cat-icon-wrap"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <div><div class="cat-name">Mobile App Development</div><div class="cat-count">12 projects</div></div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured High-Impact Jobs -->
+<section style="padding: 4rem 0; background: rgba(15, 23, 42, 0.4);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+                <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff;">Featured Project Opportunities</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">High-paying opportunities with verified clients waiting for bids</p>
+            </div>
+            <a href="{% url 'job_list' %}" class="btn btn-outline btn-sm">
+                Browse All Jobs <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="job-grid">
+            {% for job in featured_jobs %}
+                <div class="card-glass card-interactive job-card">
+                    <div>
+                        <div class="job-header">
+                            <div>
+                                <span class="badge-role badge-client mb-1" style="display: inline-block;">
+                                    {{ job.category.name|default:"Engineering" }}
+                                </span>
+                                <h3 class="job-title">
+                                    <a href="{% url 'job_detail' slug=job.slug %}">{{ job.title }}</a>
+                                </h3>
+                            </div>
+                            <div class="job-budget">{{ job.budget_display }}</div>
+                        </div>
+
+                        <p class="job-desc mt-2">{{ job.description }}</p>
+
+                        <div class="skills-wrap mt-2">
+                            {% for skill in job.skills.all|slice:":4" %}
+                                <span class="skill-tag">{{ skill.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="job-meta-row" style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); justify-content: space-between;">
+                        <div class="d-flex align-center gap-2">
+                            <span class="job-meta-item"><i class="fa-regular fa-clock"></i> {{ job.deadline_days }}d delivery</span>
+                            <span class="job-meta-item"><i class="fa-solid fa-user-tie"></i> {{ job.client.company_name|default:job.client.username }}</span>
+                        </div>
+                        <a href="{% url 'job_detail' slug=job.slug %}" class="btn btn-primary btn-sm">
+                            View & Bid <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="card-glass text-center" style="grid-column: 1 / -1; padding: 3rem;">
+                    <i class="fa-solid fa-briefcase" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                    <h3>No jobs currently listed</h3>
+                    <p class="text-muted">Check back shortly or post the first job!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Elite Talent Showcase -->
+<section style="padding: 4.5rem 0;">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+                <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff;">Connect With Top Freelancers</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Directly message, team up, or hire elite vetted professionals</p>
+            </div>
+            <a href="{% url 'freelancers' %}" class="btn btn-outline btn-sm">
+                Explore Talent Network <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="freelancer-grid">
+            {% for fl in top_freelancers %}
+                <div class="card-glass card-interactive freelancer-card">
+                    <div>
+                        <div class="freelancer-header">
+                            <div class="freelancer-avatar-wrap">
+                                <img src="{{ fl.avatar_display }}" alt="{{ fl.username }}" class="freelancer-avatar">
+                                <span class="status-indicator {% if not fl.is_available_for_hire %}busy{% endif %}"></span>
+                            </div>
+                            <div class="freelancer-info">
+                                <div class="freelancer-name">
+                                    <a href="{% url 'profile' username=fl.username %}">{{ fl.get_full_name|default:fl.username }}</a>
+                                    <i class="fa-solid fa-circle-check verified-icon" title="Verified Specialist"></i>
+                                </div>
+                                <div class="freelancer-headline">{{ fl.headline|default:"Senior Digital Craftsman" }}</div>
+                                <div class="freelancer-metrics">
+                                    <span class="rating-badge">
+                                        <i class="fa-solid fa-star"></i> {{ fl.average_rating }}
+                                    </span>
+                                    <span><i class="fa-solid fa-medal text-emerald"></i> {{ fl.job_success_score }}% Success</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="freelancer-bio mt-2">{{ fl.bio|default:"Dedicated specialist bringing clean code and high-performance solutions." }}</p>
+
+                        <div class="skills-wrap mt-2">
+                            {% for s in fl.skills.all|slice:":3" %}
+                                <span class="skill-tag">{{ s.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="freelancer-footer">
+                        <div>
+                            <div class="rate-display">${{ fl.hourly_rate|floatformat:0 }}<span class="rate-sub">/hr</span></div>
+                            <div class="rate-sub"><i class="fa-solid fa-location-dot"></i> {{ fl.location }}</div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'start_conversation' user_id=fl.id %}" class="btn btn-outline btn-sm" title="Direct Message or Network">
+                                <i class="fa-solid fa-comment-dots"></i>
+                            </a>
+                            <a href="{% url 'profile' username=fl.username %}" class="btn btn-primary btn-sm">
+                                View Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Freelancers Networking Feature Highlight -->
+<section style="padding: 4.5rem 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(9, 13, 22, 0.9) 100%);">
+    <div class="container">
+        <div style="max-width: 860px; margin: 0 auto; text-align: center;">
+            <span class="hero-badge"><i class="fa-solid fa-handshake-simple"></i> Peer-to-Peer Networking</span>
+            <h2 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+                Freelancers Can Now <span class="text-gradient">Contact & Team Up With Each Other</span>
+            </h2>
+            <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 2.5rem;">
+                Unlike legacy platforms that isolate talent, LancerPulse enables freelancers to collaborate. Need a backend engineer for your frontend project? Looking for an AI specialist to partner on a big pitch? Reach out directly, form teams, and win larger enterprise contracts together.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; text-align: left;">
+                <div class="card-glass">
+                    <div style="font-size: 1.75rem; color: var(--primary-500); margin-bottom: 0.75rem;"><i class="fa-solid fa-people-group"></i></div>
+                    <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.4rem;">Co-Op Bidding</h4>
+                    <p style="font-size: 0.88rem; color: var(--text-muted);">Partner with complementary talent to tackle comprehensive client projects.</p>
+                </div>
+                <div class="card-glass">
+                    <div style="font-size: 1.75rem; color: var(--emerald-500); margin-bottom: 0.75rem;"><i class="fa-solid fa-network-wired"></i></div>
+                    <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.4rem;">Direct Messaging</h4>
+                    <p style="font-size: 0.88rem; color: var(--text-muted);">Instant chat and collaboration without barriers or middlemen restrictions.</p>
+                </div>
+                <div class="card-glass">
+                    <div style="font-size: 1.75rem; color: var(--amber-500); margin-bottom: 0.75rem;"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.4rem;">Protected Contracts</h4>
+                    <p style="font-size: 0.88rem; color: var(--text-muted);">Milestone-based escrow guarantees you are paid on time, every time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section style="padding: 5rem 0;">
+    <div class="container">
+        <div class="card-glass text-center" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 100%); border-color: rgba(99, 102, 241, 0.35); padding: 3.5rem 1.5rem;">
+            <h2 style="font-size: 2.3rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+                Ready to Experience The New Standard in Freelancing?
+            </h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem;">
+                Join thousands of software engineers, designers, AI experts, and innovative clients building together.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'register' %}?role=FREELANCER" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-code"></i> Apply as Freelancer
+                </a>
+                <a href="{% url 'register' %}?role=CLIENT" class="btn btn-emerald btn-lg">
+                    <i class="fa-solid fa-briefcase"></i> Post a Job & Hire
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

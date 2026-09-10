@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notification Center | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem; max-width: 900px;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 0.35rem;">
+                <i class="fa-solid fa-bell text-primary me-2"></i> Notification Center
+            </h1>
+            <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+                Stay updated on proposals, escrow milestones, contracts, and platform activities.
+            </p>
+        </div>
+
+        {% if unread_count > 0 %}
+            <form method="POST" action="{% url 'mark_all_notifications_read' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-check-double me-1"></i> Mark All as Read ({{ unread_count }})
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Filter Navigation Tabs -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle);">
+        <a href="{% url 'notifications_list' %}" class="btn btn-sm {% if active_type == 'all' and active_status != 'unread' %}btn-primary{% else %}btn-ghost{% endif %}">
+            All
+        </a>
+        <a href="{% url 'notifications_list' %}?status=unread" class="btn btn-sm {% if active_status == 'unread' %}btn-primary{% else %}btn-ghost{% endif %}">
+            Unread {% if unread_count > 0 %}<span class="badge-role badge-freelancer ms-1">{{ unread_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'notifications_list' %}?type=CONTRACT" class="btn btn-sm {% if active_type == 'CONTRACT' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fa-solid fa-file-contract me-1"></i> Contracts & Milestones
+        </a>
+        <a href="{% url 'notifications_list' %}?type=PAYMENT" class="btn btn-sm {% if active_type == 'PAYMENT' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fa-solid fa-wallet me-1"></i> Payments & Invoices
+        </a>
+        <a href="{% url 'notifications_list' %}?type=PROPOSAL" class="btn btn-sm {% if active_type == 'PROPOSAL' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fa-solid fa-paper-plane me-1"></i> Proposals
+        </a>
+        <a href="{% url 'notifications_list' %}?type=INVITATION" class="btn btn-sm {% if active_type == 'INVITATION' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fa-solid fa-envelope-open-text me-1"></i> Invitations
+        </a>
+    </div>
+
+    <!-- Notifications List -->
+    <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        {% for notif in page_obj %}
+            <a href="{% url 'mark_notification_read' notification_id=notif.id %}" style="text-decoration: none; display: block;">
+                <div class="card-glass card-interactive" style="padding: 1.15rem 1.25rem; display: flex; align-items: flex-start; gap: 1rem; border-left: 4px solid {% if not notif.is_read %}var(--primary-500){% else %}transparent{% endif %}; background: {% if not notif.is_read %}rgba(79, 70, 229, 0.08){% else %}var(--bg-card){% endif %};">
+                    
+                    <!-- Icon / Avatar -->
+                    <div style="position: relative; flex-shrink: 0;">
+                        {% if notif.actor %}
+                            <img src="{{ notif.actor.avatar_display }}" alt="{{ notif.actor.username }}" class="avatar-img-sm" style="width: 42px; height: 42px;">
+                        {% else %}
+                            <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(79, 70, 229, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary-500); font-size: 1.1rem;">
+                                {% if notif.notification_type == 'PAYMENT' %}
+                                    <i class="fa-solid fa-receipt text-emerald"></i>
+                                {% elif notif.notification_type == 'CONTRACT' %}
+                                    <i class="fa-solid fa-file-contract text-primary"></i>
+                                {% elif notif.notification_type == 'PROPOSAL' %}
+                                    <i class="fa-solid fa-paper-plane" style="color: #A78BFA;"></i>
+                                {% elif notif.notification_type == 'INVITATION' %}
+                                    <i class="fa-solid fa-envelope-open-text" style="color: #F59E0B;"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-bell"></i>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if not notif.is_read %}
+                            <span style="position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary-500); border: 2px solid var(--bg-card);"></span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Content -->
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                            <div style="font-weight: 700; color: #fff; font-size: 0.98rem;">
+                                {{ notif.title }}
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--text-subtle); white-space: nowrap;">
+                                <i class="fa-regular fa-clock me-1"></i> {{ notif.created_at|timesince }} ago
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.4rem;">
+                            {{ notif.message }}
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem;">
+                            <span class="badge-role {% if notif.notification_type == 'PAYMENT' %}badge-client{% elif notif.notification_type == 'CONTRACT' %}badge-both{% else %}badge-freelancer{% endif %}">
+                                {{ notif.get_notification_type_display }}
+                            </span>
+                            {% if notif.link %}
+                                <span style="color: var(--primary-500); font-weight: 600;">
+                                    View Details <i class="fa-solid fa-arrow-right ms-1" style="font-size: 0.7rem;"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="card-glass text-center" style="padding: 4rem 2rem;">
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(79, 70, 229, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; color: var(--primary-500); font-size: 1.8rem;">
+                    <i class="fa-regular fa-bell"></i>
+                </div>
+                <h3 style="font-size: 1.3rem; color: #fff; margin-bottom: 0.5rem;">No notifications found</h3>
+                <p style="color: var(--text-subtle); max-width: 380px; margin: 0 auto 1.5rem; font-size: 0.9rem;">
+                    You are all caught up! Project invites, proposal updates, and milestone releases will appear here.
+                </p>
+                <a href="{% url 'job_list' %}" class="btn btn-primary btn-sm">Browse Marketplace</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2.5rem;">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if active_type != 'all' %}&type={{ active_type }}{% endif %}{% if active_status == 'unread' %}&status=unread{% endif %}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+
+            <span class="btn btn-ghost btn-sm" style="color: var(--text-muted);">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if active_type != 'all' %}&type={{ active_type }}{% endif %}{% if active_status == 'unread' %}&status=unread{% endif %}" class="btn btn-outline btn-sm">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

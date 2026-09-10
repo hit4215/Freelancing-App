@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem;">
+    <!-- Welcome Header -->
+    <div class="card-glass mb-4" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%); padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <img src="{{ user.avatar_display }}" alt="{{ user.username }}" class="avatar-img-sm" style="width: 68px; height: 68px; border-width: 3px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.25rem;">
+                        <h1 style="font-size: 1.75rem; font-weight: 800; color: #fff;">
+                            Welcome, {{ user.first_name|default:user.username }}!
+                        </h1>
+                        <span class="badge-role {% if user.role == 'FREELANCER' %}badge-freelancer{% elif user.role == 'CLIENT' %}badge-client{% else %}badge-both{% endif %}">
+                            {{ user.get_role_display }}
+                        </span>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.92rem;">
+                        {{ user.headline|default:"Professional Member on LancerPulse" }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'edit_profile' %}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-sliders"></i> Edit Profile
+                </a>
+                <a href="{% url 'profile' username=user.username %}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-eye"></i> View Public Profile
+                </a>
+                {% if user.is_client %}
+                    <a href="{% url 'create_job' %}" class="btn btn-emerald btn-sm">
+                        <i class="fa-solid fa-plus"></i> Post a Project
+                    </a>
+                {% endif %}
+                <a href="{% url 'inbox' %}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-comment-dots"></i> Inbox
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics KPI Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+        {% if user.is_client %}
+            <div class="card-glass stat-item">
+                <div class="stat-num">{{ total_jobs_posted }}</div>
+                <div class="stat-label">Jobs Posted</div>
+            </div>
+            <div class="card-glass stat-item">
+                <div class="stat-num text-gradient">{{ total_proposals_received }}</div>
+                <div class="stat-label">Proposals Received</div>
+            </div>
+            <div class="card-glass stat-item">
+                <div class="stat-num text-emerald">{{ active_contracts_count }}</div>
+                <div class="stat-label">Active Hires</div>
+            </div>
+            <div class="card-glass stat-item">
+                <div class="stat-num">${{ total_spent|floatformat:0 }}</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+        {% endif %}
+
+        {% if user.is_freelancer %}
+            <div class="card-glass stat-item">
+                <div class="stat-num">{{ active_proposals_count }}</div>
+                <div class="stat-label">Active Bids</div>
+            </div>
+            <div class="card-glass stat-item">
+                <div class="stat-num text-gradient">{{ active_contracts_count }}</div>
+                <div class="stat-label">Ongoing Contracts</div>
+            </div>
+            <div class="card-glass stat-item">
+                <div class="stat-num text-emerald">{{ completed_contracts_count }}</div>
+                <div class="stat-label">Completed Jobs</div>
+            </div>
+            <div class="card-glass stat-item">
+                <div class="stat-num">${{ total_earned|floatformat:0 }}</div>
+                <div class="stat-label">Total Earnings</div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Interactive Tabs Navigation -->
+    <div class="tabs-nav" style="overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.25rem;">
+        {% if user.is_client %}
+            <button class="tab-btn active" data-tab-group="dash" data-tab-target="tabClientJobs">
+                <i class="fa-solid fa-briefcase"></i> My Posted Projects ({{ client_jobs.count }})
+            </button>
+            <button class="tab-btn" data-tab-group="dash" data-tab-target="tabClientContracts">
+                <i class="fa-solid fa-file-contract"></i> Active Contracts ({{ active_contracts.count }})
+            </button>
+            <button class="tab-btn" data-tab-group="dash" data-tab-target="tabSentInvitations">
+                <i class="fa-solid fa-paper-plane"></i> Sent Invitations ({{ sent_invitations.count }})
+            </button>
+        {% endif %}
+
+        {% if user.is_freelancer %}
+            <button class="tab-btn {% if not user.is_client %}active{% endif %}" data-tab-group="dash" data-tab-target="tabFreelancerProposals">
+                <i class="fa-solid fa-paper-plane"></i> My Proposals ({{ freelancer_proposals.count }})
+            </button>
+            <button class="tab-btn" data-tab-group="dash" data-tab-target="tabFreelancerContracts">
+                <i class="fa-solid fa-file-contract"></i> Ongoing Contracts ({{ active_contracts.count }})
+            </button>
+            <button class="tab-btn" data-tab-group="dash" data-tab-target="tabSavedJobs">
+                <i class="fa-solid fa-bookmark"></i> Saved Jobs ({{ saved_jobs.count }})
+            </button>
+            <button class="tab-btn" data-tab-group="dash" data-tab-target="tabInvitations">
+                <i class="fa-solid fa-envelope-open-text"></i> Invitations ({{ received_invitations.count }})
+            </button>
+            <button class="tab-btn" data-tab-group="dash" data-tab-target="tabRecommended">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Matched Projects
+            </button>
+        {% endif %}
+
+        <button class="tab-btn" data-tab-group="dash" data-tab-target="tabInvoices">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Invoices & Billing ({{ invoices.count }})
+        </button>
+    </div>
+
+    <!-- Tab Contents -->
+    {% if user.is_client %}
+        <!-- Client Posted Jobs Tab -->
+        <div id="tabClientJobs" class="tab-pane active" data-tab-group="dash">
+            <div class="job-grid">
+                {% for job in client_jobs %}
+                    <div class="card-glass job-card">
+                        <div>
+                            <div class="job-header">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.35rem;">
+                                        <span class="admin-badge {% if job.status == 'OPEN' %}badge-open{% elif job.status == 'IN_PROGRESS' %}badge-in_progress{% elif job.status == 'COMPLETED' %}badge-completed{% else %}badge-closed{% endif %}">
+                                            {% if job.status == 'OPEN' %}
+                                                <i class="fa-solid fa-circle-dot text-emerald"></i>
+                                            {% elif job.status == 'IN_PROGRESS' %}
+                                                <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                                            {% elif job.status == 'COMPLETED' %}
+                                                <i class="fa-solid fa-circle-check"></i>
+                                            {% else %}
+                                                <i class="fa-solid fa-lock"></i>
+                                            {% endif %}
+                                            {{ job.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <h3 class="job-title">
+                                        <a href="{% url 'job_detail' slug=job.slug %}">{{ job.title }}</a>
+                                    </h3>
+                                </div>
+                                <div class="job-budget">{{ job.budget_display }}</div>
+                            </div>
+                            <p class="job-desc mt-2">{{ job.description }}</p>
+                        </div>
+
+                        <div class="job-meta-row" style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                            <span class="job-meta-item">
+                                <i class="fa-solid fa-users"></i> <strong>{{ job.proposals.count }}</strong> bids
+                            </span>
+                            <div class="d-flex gap-1 align-center" style="flex-wrap: wrap;">
+                                <form method="POST" action="{% url 'update_job_status' slug=job.slug %}" style="margin: 0; display: inline-flex; align-items: center;">
+                                    {% csrf_token %}
+                                    <select name="status" onchange="this.form.submit()" class="form-control" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; height: auto; width: auto;" title="Change Project Status">
+                                        <option value="OPEN" {% if job.status == 'OPEN' %}selected{% endif %}>🟢 Open</option>
+                                        <option value="IN_PROGRESS" {% if job.status == 'IN_PROGRESS' %}selected{% endif %}>🟡 In Progress</option>
+                                        <option value="COMPLETED" {% if job.status == 'COMPLETED' %}selected{% endif %}>🟣 Completed</option>
+                                        <option value="CLOSED" {% if job.status == 'CLOSED' %}selected{% endif %}>🔴 Closed</option>
+                                    </select>
+                                </form>
+                                <a href="{% url 'edit_job' slug=job.slug %}" class="btn btn-outline btn-sm" title="Edit Full Post">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <a href="{% url 'job_detail' slug=job.slug %}" class="btn btn-primary btn-sm">
+                                    Bids & Hire
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="grid-column: 1 / -1; padding: 3rem;">
+                        <i class="fa-solid fa-file-circle-plus" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                        <h3 style="color: #fff;">No posted projects yet</h3>
+                        <p class="text-muted" style="margin: 0.5rem 0 1.5rem;">Create your first project post to begin receiving proposals from global talent.</p>
+                        <a href="{% url 'create_job' %}" class="btn btn-emerald">Post a Project</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Client Active Contracts Tab -->
+        <div id="tabClientContracts" class="tab-pane" data-tab-group="dash">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for contract in active_contracts %}
+                    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <img src="{{ contract.freelancer.avatar_display }}" alt="{{ contract.freelancer.username }}" class="avatar-img-sm" style="width: 48px; height: 48px;">
+                            <div>
+                                <h4 style="color: #fff; font-weight: 700; font-size: 1.1rem;">
+                                    <a href="{% url 'contract_detail' contract_id=contract.id %}">{{ contract.job.title }}</a>
+                                </h4>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                    Hired: <strong>{{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</strong> • Contract Amount: <span class="text-emerald">${{ contract.total_amount|floatformat:2 }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <a href="{% url 'start_conversation' user_id=contract.freelancer.id %}?job_id={{ contract.job.id }}" class="btn btn-outline btn-sm">
+                                <i class="fa-solid fa-comment-dots"></i> Chat
+                            </a>
+                            <a href="{% url 'contract_detail' contract_id=contract.id %}" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-file-contract me-1"></i> Escrow Workspace
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <p class="text-muted">No active contracts right now. Review bids on your jobs to hire specialists!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Client Sent Invitations Tab -->
+        <div id="tabSentInvitations" class="tab-pane" data-tab-group="dash">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for inv in sent_invitations %}
+                    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <img src="{{ inv.freelancer.avatar_display }}" alt="{{ inv.freelancer.username }}" class="avatar-img-sm" style="width: 48px; height: 48px;">
+                            <div>
+                                <span class="badge-role {% if inv.status == 'ACCEPTED' %}badge-client{% elif inv.status == 'DECLINED' %}badge-danger{% else %}badge-both{% endif %} mb-1" style="display: inline-block;">
+                                    {{ inv.get_status_display }}
+                                </span>
+                                <h4 style="color: #fff; font-weight: 700; font-size: 1.05rem;">
+                                    Invited <a href="{% url 'profile' username=inv.freelancer.username %}">{{ inv.freelancer.get_full_name|default:inv.freelancer.username }}</a> to apply for <a href="{% url 'job_detail' slug=inv.job.slug %}">{{ inv.job.title }}</a>
+                                </h4>
+                                {% if inv.message %}
+                                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">"{{ inv.message|truncatechars:100 }}"</div>
+                                {% endif %}
+                                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 3px;">
+                                    Sent {{ inv.created_at|timesince }} ago
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{% url 'job_detail' slug=inv.job.slug %}" class="btn btn-outline btn-sm">View Job</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <i class="fa-solid fa-paper-plane" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                        <p class="text-muted">No talent invitations sent yet. Visit the Freelancer Network directory to invite top specialists to your open projects.</p>
+                        <a href="{% url 'freelancers' %}" class="btn btn-primary btn-sm">Browse Freelancers</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if user.is_freelancer %}
+        <!-- Freelancer Proposals Tab -->
+        <div id="tabFreelancerProposals" class="tab-pane {% if not user.is_client %}active{% endif %}" data-tab-group="dash">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for prop in freelancer_proposals %}
+                    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.25rem;">
+                                <span class="badge-role {% if prop.status == 'ACCEPTED' %}badge-client{% elif prop.status == 'REJECTED' %}badge-danger{% else %}badge-both{% endif %}">
+                                    Proposal: {{ prop.get_status_display }}
+                                </span>
+                                <span class="admin-badge {% if prop.job.status == 'OPEN' %}badge-open{% elif prop.job.status == 'IN_PROGRESS' %}badge-in_progress{% elif prop.job.status == 'COMPLETED' %}badge-completed{% else %}badge-closed{% endif %}" style="font-size: 0.72rem; padding: 0.15rem 0.5rem;">
+                                    Project: {{ prop.job.get_status_display }}
+                                </span>
+                            </div>
+                            <h4 style="color: #fff; font-weight: 700; font-size: 1.1rem;">
+                                <a href="{% url 'job_detail' slug=prop.job.slug %}">{{ prop.job.title }}</a>
+                            </h4>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Client: {{ prop.job.client.company_name|default:prop.job.client.username }} • Submitted {{ prop.created_at|timesince }} ago
+                            </div>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--emerald-500);">${{ prop.bid_amount|floatformat:2 }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-subtle);">{{ prop.estimated_days }} days delivery</div>
+                            <a href="{% url 'job_detail' slug=prop.job.slug %}" class="btn btn-outline btn-sm mt-1">View Project</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <i class="fa-solid fa-paper-plane" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                        <h3 style="color: #fff;">No proposals submitted yet</h3>
+                        <p class="text-muted" style="margin: 0.5rem 0 1.5rem;">Explore available jobs and submit your proposal to start earning.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary">Find Work</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Freelancer Ongoing Contracts Tab -->
+        <div id="tabFreelancerContracts" class="tab-pane" data-tab-group="dash">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for contract in active_contracts %}
+                    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge-role badge-client mb-1" style="display: inline-block;">Active Work in Progress</span>
+                            <h4 style="color: #fff; font-weight: 700; font-size: 1.1rem;">
+                                <a href="{% url 'contract_detail' contract_id=contract.id %}">{{ contract.job.title }}</a>
+                            </h4>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Client: <strong>{{ contract.client.company_name|default:contract.client.username }}</strong> • Contract Amount: <span class="text-emerald">${{ contract.total_amount|floatformat:2 }}</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem;">
+                            <a href="{% url 'start_conversation' user_id=contract.client.id %}?job_id={{ contract.job.id }}" class="btn btn-outline btn-sm">
+                                <i class="fa-solid fa-comment-dots"></i> Message Client
+                            </a>
+                            <a href="{% url 'contract_detail' contract_id=contract.id %}" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-file-contract me-1"></i> Escrow Workspace
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <p class="text-muted">No active contracts currently running. Submit winning bids to start earning!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Freelancer Saved Jobs Tab -->
+        <div id="tabSavedJobs" class="tab-pane" data-tab-group="dash">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for saved in saved_jobs %}
+                    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge-role badge-client mb-1" style="display: inline-block;">{{ saved.job.category.name|default:"General" }}</span>
+                            <h4 style="color: #fff; font-weight: 700; font-size: 1.1rem;">
+                                <a href="{% url 'job_detail' slug=saved.job.slug %}">{{ saved.job.title }}</a>
+                            </h4>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Budget: <strong style="color: var(--emerald-500);">{{ saved.job.budget_display }}</strong> • Posted by {{ saved.job.client.company_name|default:saved.job.client.username }}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <form method="POST" action="{% url 'toggle_save_job' slug=saved.job.slug %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline btn-sm" title="Remove Bookmark">
+                                    <i class="fa-solid fa-bookmark text-emerald"></i> Remove
+                                </button>
+                            </form>
+                            <a href="{% url 'job_detail' slug=saved.job.slug %}" class="btn btn-primary btn-sm">
+                                View & Apply
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <i class="fa-regular fa-bookmark" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                        <h3 style="color: #fff;">No saved jobs yet</h3>
+                        <p class="text-muted" style="margin: 0.5rem 0 1.5rem;">Bookmark interesting jobs from the job search page to apply later.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary btn-sm">Explore Jobs</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Freelancer Received Invitations Tab -->
+        <div id="tabInvitations" class="tab-pane" data-tab-group="dash">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for inv in received_invitations %}
+                    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-left: 4px solid {% if inv.status == 'ACCEPTED' %}var(--emerald-500){% elif inv.status == 'DECLINED' %}var(--rose-500){% else %}var(--primary-500){% endif %};">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <img src="{{ inv.client.avatar_display }}" alt="{{ inv.client.username }}" class="avatar-img-sm" style="width: 48px; height: 48px;">
+                            <div>
+                                <span class="badge-role {% if inv.status == 'ACCEPTED' %}badge-client{% elif inv.status == 'DECLINED' %}badge-danger{% else %}badge-both{% endif %} mb-1" style="display: inline-block;">
+                                    {{ inv.get_status_display }}
+                                </span>
+                                <h4 style="color: #fff; font-weight: 700; font-size: 1.05rem;">
+                                    <a href="{% url 'job_detail' slug=inv.job.slug %}">{{ inv.job.title }}</a>
+                                </h4>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                    From: <strong>{{ inv.client.company_name|default:inv.client.get_full_name|default:inv.client.username }}</strong> • Budget: <span class="text-emerald">{{ inv.job.budget_display }}</span>
+                                </div>
+                                {% if inv.message %}
+                                    <div style="font-size: 0.82rem; color: var(--text-main); background: rgba(0,0,0,0.2); padding: 0.4rem 0.75rem; border-radius: 4px; margin-top: 0.35rem;">
+                                        "{{ inv.message }}"
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            {% if inv.status == 'PENDING' %}
+                                <a href="{% url 'respond_invitation' invitation_id=inv.id action='accept' %}" class="btn btn-emerald btn-sm">
+                                    <i class="fa-solid fa-check me-1"></i> Accept & Apply
+                                </a>
+                                <a href="{% url 'respond_invitation' invitation_id=inv.id action='decline' %}" class="btn btn-outline btn-sm" style="color: var(--rose-500); border-color: rgba(244,63,94,0.3);">
+                                    <i class="fa-solid fa-xmark me-1"></i> Decline
+                                </a>
+                            {% else %}
+                                <a href="{% url 'job_detail' slug=inv.job.slug %}" class="btn btn-outline btn-sm">View Job</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <i class="fa-solid fa-envelope-open-text" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem;"></i>
+                        <h3 style="color: #fff;">No invitations right now</h3>
+                        <p class="text-muted">When clients review your profile and invite you to apply directly to their projects, invitations will appear here.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recommended Jobs Tab -->
+        <div id="tabRecommended" class="tab-pane" data-tab-group="dash">
+            <div class="job-grid">
+                {% for job in recommended_jobs %}
+                    <div class="card-glass job-card">
+                        <div>
+                            <div class="job-header">
+                                <h3 class="job-title">
+                                    <a href="{% url 'job_detail' slug=job.slug %}">{{ job.title }}</a>
+                                </h3>
+                                <div class="job-budget">{{ job.budget_display }}</div>
+                            </div>
+                            <p class="job-desc mt-2">{{ job.description }}</p>
+                            <div class="skills-wrap mt-2">
+                                {% for s in job.skills.all %}
+                                    <span class="skill-tag">{{ s.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="job-meta-row" style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); justify-content: space-between;">
+                            <span class="job-meta-item"><i class="fa-regular fa-clock"></i> {{ job.deadline_days }}d</span>
+                            <a href="{% url 'job_detail' slug=job.slug %}" class="btn btn-primary btn-sm">View & Apply</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card-glass text-center" style="padding: 3rem;">
+                        <p class="text-muted">No matched projects found at this time.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Invoices & Billing Center Tab (Shared for Client and Freelancer) -->
+    <div id="tabInvoices" class="tab-pane" data-tab-group="dash">
+        <div class="card-glass" style="padding: 0; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-subtle); background: rgba(255,255,255,0.02);">
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle);">Invoice #</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle);">Project / Contract</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle);">Party</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle);">Issue Date</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle);">Amount</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle);">Status</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 600; color: var(--text-subtle); text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in invoices %}
+                            <tr style="border-bottom: 1px solid var(--border-subtle);">
+                                <td style="padding: 1rem 1.25rem; font-weight: 700; color: #fff;">
+                                    <i class="fa-solid fa-file-invoice-dollar me-1 text-primary"></i> {{ inv.invoice_number }}
+                                </td>
+                                <td style="padding: 1rem 1.25rem;">
+                                    <a href="{% url 'contract_detail' contract_id=inv.contract.id %}" style="color: #fff; font-weight: 600; text-decoration: none;">
+                                        {{ inv.contract.job.title|truncatechars:35 }}
+                                    </a>
+                                </td>
+                                <td style="padding: 1rem 1.25rem; color: var(--text-muted);">
+                                    {% if user == inv.client %}
+                                        Freelancer: <strong>{{ inv.freelancer.get_full_name|default:inv.freelancer.username }}</strong>
+                                    {% else %}
+                                        Client: <strong>{{ inv.client.company_name|default:inv.client.username }}</strong>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 1rem 1.25rem; color: var(--text-subtle);">
+                                    {{ inv.issue_date|date:"M d, Y" }}
+                                </td>
+                                <td style="padding: 1rem 1.25rem; font-weight: 700; color: var(--emerald-500);">
+                                    ${{ inv.total|floatformat:2 }}
+                                </td>
+                                <td style="padding: 1rem 1.25rem;">
+                                    <span class="badge-role badge-client" style="background: rgba(16, 185, 129, 0.15); color: var(--emerald-500);">
+                                        {{ inv.get_status_display }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem 1.25rem; text-align: right;">
+                                    <a href="{% url 'invoice_detail' invoice_id=inv.id %}" class="btn btn-outline btn-sm">
+                                        <i class="fa-solid fa-receipt me-1"></i> View Receipt
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-subtle);">
+                                    <i class="fa-solid fa-file-invoice-dollar" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 1rem; display: block;"></i>
+                                    No invoices issued yet. Digital receipts are created automatically as contract milestones are approved and paid.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

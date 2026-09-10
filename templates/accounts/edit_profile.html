@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile & Settings | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem; max-width: 860px;">
+    <div style="margin-bottom: 2rem;">
+        <div class="hero-badge"><i class="fa-solid fa-sliders"></i> Profile Customization</div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">Edit Profile & Portfolio</h1>
+        <p style="color: var(--text-muted); font-size: 1rem;">Keep your professional bio, rates, and portfolio updated to attract high-paying contracts.</p>
+    </div>
+
+    <!-- Main Profile Edit Form -->
+    <div class="card-glass mb-4" style="padding: 2rem;">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Professional Headline</label>
+                {{ form.headline }}
+                <small class="text-muted">e.g. Senior Full-Stack Python & AI Architect</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Professional Bio & Experience Summary</label>
+                {{ form.bio }}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">Hourly Rate ($)</label>
+                    {{ form.hourly_rate }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Experience Level</label>
+                    {{ form.experience_level }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    {{ form.location }}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">Avatar Image URL</label>
+                    {{ form.avatar_url }}
+                    <small class="text-muted">Direct image URL (e.g. Unsplash or GitHub avatar)</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    {{ form.phone }}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">Company Name (Clients)</label>
+                    {{ form.company_name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website URL</label>
+                    {{ form.website }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">GitHub URL</label>
+                    {{ form.github }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Skills & Competencies (Hold Ctrl/Cmd to select multiple)</label>
+                {{ form.skills }}
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                {{ form.is_available_for_hire }}
+                <label class="form-label" style="margin: 0; cursor: pointer;">
+                    <strong>Available for Hire / New Contracts</strong> (Displays a green status dot on your profile and search cards)
+                </label>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                <a href="{% url 'profile' username=user.username %}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-md">
+                    <i class="fa-solid fa-check"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Portfolio Management Section -->
+    <div class="card-glass" id="portfolioSection" style="padding: 2rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 700; color: #fff; margin-bottom: 1.5rem;">
+            Manage Portfolio Items
+        </h3>
+
+        <!-- Add Portfolio Form -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Add New Project</h4>
+            <form method="POST" action="{% url 'add_portfolio' %}">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Project Title</label>
+                        {{ portfolio_form.title }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Live URL / Demo Link</label>
+                        {{ portfolio_form.project_url }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Screenshot / Thumbnail Image URL</label>
+                    {{ portfolio_form.image_url }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Technologies Used (Tags)</label>
+                    {{ portfolio_form.tags }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Short Description</label>
+                    {{ portfolio_form.description }}
+                </div>
+                <button type="submit" class="btn btn-emerald btn-sm">
+                    <i class="fa-solid fa-plus"></i> Add to Portfolio
+                </button>
+            </form>
+        </div>
+
+        <!-- Current Items List -->
+        <div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Current Portfolio Items ({{ portfolio_items.count }})</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem;">
+                {% for item in portfolio_items %}
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+                        {% if item.image_url %}
+                            <img src="{{ item.image_url }}" alt="{{ item.title }}" style="width: 100%; height: 120px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.75rem;">
+                        {% endif %}
+                        <div style="font-weight: 700; color: #fff;">{{ item.title }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin: 0.35rem 0;">{{ item.tags }}</div>
+                        <form method="POST" action="{% url 'delete_portfolio' pk=item.pk %}" style="margin-top: 0.75rem;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Remove this portfolio item?');">
+                                <i class="fa-solid fa-trash"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">No portfolio items added yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

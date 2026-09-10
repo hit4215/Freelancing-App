@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ job.title }} | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem;">
+    <!-- Breadcrumbs -->
+    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-subtle); margin-bottom: 1.5rem;">
+        <a href="{% url 'home' %}">Home</a>
+        <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
+        <a href="{% url 'job_list' %}">Jobs</a>
+        <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
+        <span style="color: var(--text-muted); max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ job.title }}</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+            <style>
+                @media (min-width: 992px) {
+                    .detail-layout {
+                        display: grid;
+                        grid-template-columns: 2fr 1fr;
+                        gap: 2rem;
+                        align-items: start;
+                    }
+                }
+            </style>
+            
+            <div class="detail-layout">
+                <!-- Main Job Column -->
+                <div>
+                    <div class="card-glass mb-4">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+                            <div>
+                                <span class="badge-role badge-client mb-2" style="display: inline-block;">
+                                    {{ job.category.name|default:"General" }}
+                                </span>
+                                <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 0.75rem;">
+                                    {{ job.title }}
+                                </h1>
+                                <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.85rem; color: var(--text-subtle); flex-wrap: wrap;">
+                                    <span><i class="fa-regular fa-clock"></i> Posted {{ job.created_at|timesince }} ago</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> {{ job.get_location_type_display }}</span>
+                                    <span><i class="fa-solid fa-signal"></i> {{ job.get_experience_level_display }}</span>
+                                </div>
+                            </div>
+
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--emerald-500);">
+                                    {{ job.budget_display }}
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.35rem;">
+                                    <span class="admin-badge {% if job.status == 'OPEN' %}badge-open{% elif job.status == 'IN_PROGRESS' %}badge-in_progress{% elif job.status == 'COMPLETED' %}badge-completed{% else %}badge-closed{% endif %}" style="font-size: 0.82rem; padding: 0.35rem 0.75rem;">
+                                        {% if job.status == 'OPEN' %}
+                                            <i class="fa-solid fa-circle-dot text-emerald"></i>
+                                        {% elif job.status == 'IN_PROGRESS' %}
+                                            <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                                        {% elif job.status == 'COMPLETED' %}
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        {% else %}
+                                            <i class="fa-solid fa-lock"></i>
+                                        {% endif %}
+                                        {{ job.get_status_display }}
+                                    </span>
+                                    {% if user.is_authenticated %}
+                                        <form method="POST" action="{% url 'toggle_save_job' slug=job.slug %}" style="margin: 0; display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem;" title="{% if is_saved %}Remove from Saved{% else %}Bookmark Job{% endif %}">
+                                                <i class="{% if is_saved %}fa-solid text-emerald{% else %}fa-regular{% endif %} fa-bookmark"></i> {% if is_saved %}Saved{% else %}Save{% endif %}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Contract Alert -->
+                        {% if contract %}
+                            <div class="alert alert-info mt-3" style="border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                                <div>
+                                    <strong><i class="fa-solid fa-file-contract me-1"></i> Active Contract:</strong>
+                                    Hired {{ contract.freelancer.get_full_name|default:contract.freelancer.username }} for ${{ contract.total_amount|floatformat:2 }}
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    {% if user == contract.client or user == contract.freelancer %}
+                                        <a href="{% url 'contract_detail' contract_id=contract.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fa-solid fa-file-contract me-1"></i> Escrow Workspace
+                                        </a>
+                                        {% if contract.status == 'ACTIVE' and user == contract.client %}
+                                            <form method="POST" action="{% url 'complete_contract' contract_id=contract.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-emerald btn-sm" onclick="return confirm('Confirm contract completion and release payment?');">
+                                                    Mark Completed
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.75rem 0;">
+
+                        <!-- Description -->
+                        <div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Project Scope & Description</h3>
+                            <div style="font-size: 0.98rem; color: var(--text-muted); line-height: 1.8; white-space: pre-line;">
+                                {{ job.description }}
+                            </div>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.75rem 0;">
+
+                        <!-- Skills Required -->
+                        <div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Skills & Expertise Required</h3>
+                            <div class="skills-wrap">
+                                {% for skill in job.skills.all %}
+                                    <span class="skill-tag" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">{{ skill.name }}</span>
+                                {% empty %}
+                                    <span class="skill-tag">Full-Stack Development</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client Owner's Proposal Management Section -->
+                    {% if is_client_owner %}
+                        <div class="card-glass mb-4">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 1.25rem;">
+                                Received Proposals ({{ proposals.count }})
+                            </h3>
+                            {% for prop in proposals %}
+                                <div style="padding: 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <img src="{{ prop.freelancer.avatar_display }}" alt="{{ prop.freelancer.username }}" class="avatar-img-sm" style="width: 48px; height: 48px;">
+                                            <div>
+                                                <h4 style="font-size: 1.05rem; font-weight: 700; color: #fff;">
+                                                    <a href="{% url 'profile' username=prop.freelancer.username %}">{{ prop.freelancer.get_full_name|default:prop.freelancer.username }}</a>
+                                                </h4>
+                                                <div style="font-size: 0.82rem; color: var(--primary-500); font-weight: 600;">{{ prop.freelancer.headline }}</div>
+                                                <div style="font-size: 0.78rem; color: var(--text-subtle);">
+                                                    ★ {{ prop.freelancer.average_rating }} ({{ prop.freelancer.review_count }} reviews) • {{ prop.freelancer.job_success_score }}% Job Success
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--emerald-500);">${{ prop.bid_amount|floatformat:2 }}</div>
+                                            <div style="font-size: 0.8rem; color: var(--text-muted);">in {{ prop.estimated_days }} days</div>
+                                            <span class="badge-role {% if prop.status == 'ACCEPTED' %}badge-client{% elif prop.status == 'REJECTED' %}badge-danger{% else %}badge-both{% endif %}">
+                                                {{ prop.get_status_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <p style="font-size: 0.92rem; color: var(--text-muted); margin: 1rem 0; line-height: 1.6;">
+                                        {{ prop.cover_letter }}
+                                    </p>
+
+                                    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                                        <a href="{% url 'start_conversation' user_id=prop.freelancer.id %}?job_id={{ job.id }}" class="btn btn-outline btn-sm">
+                                            <i class="fa-solid fa-comment-dots"></i> Message Freelancer
+                                        </a>
+                                        {% if job.status == 'OPEN' and prop.status == 'PENDING' %}
+                                            <a href="{% url 'accept_proposal' proposal_id=prop.id %}" class="btn btn-emerald btn-sm" onclick="return confirm('Hire this freelancer for ${{ prop.bid_amount|floatformat:2 }}?');">
+                                                <i class="fa-solid fa-check"></i> Accept & Hire
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p class="text-muted">No proposals submitted for this project yet.</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Freelancer's Proposal Status or Submit Box -->
+                    {% if user.is_authenticated and user.is_freelancer and not is_client_owner %}
+                        {% if user_proposal %}
+                            <div class="card-glass mb-4">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Your Submitted Proposal</h3>
+                                    <span class="badge-role {% if user_proposal.status == 'ACCEPTED' %}badge-client{% elif user_proposal.status == 'REJECTED' %}badge-danger{% else %}badge-both{% endif %}">
+                                        {{ user_proposal.get_status_display }}
+                                    </span>
+                                </div>
+                                <div style="display: flex; gap: 2rem; margin-bottom: 1rem; font-size: 0.95rem;">
+                                    <div><strong>Your Bid:</strong> <span class="text-emerald">${{ user_proposal.bid_amount|floatformat:2 }}</span></div>
+                                    <div><strong>Estimated Delivery:</strong> {{ user_proposal.estimated_days }} days</div>
+                                </div>
+                                <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6; white-space: pre-line;">
+                                    {{ user_proposal.cover_letter }}
+                                </p>
+                            </div>
+                        {% elif job.status == 'OPEN' %}
+                            <div class="card-glass mb-4" id="applySection">
+                                <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">
+                                    Submit a Proposal for this Project
+                                </h3>
+                                <form method="POST" action="{% url 'submit_proposal' slug=job.slug %}">
+                                    {% csrf_token %}
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                                        <div>
+                                            <label class="form-label">Your Bid Amount ($)</label>
+                                            {{ proposal_form.bid_amount }}
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Estimated Days</label>
+                                            {{ proposal_form.estimated_days }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Cover Letter / Pitch</label>
+                                        {{ proposal_form.cover_letter }}
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fa-solid fa-paper-plane"></i> Submit Proposal Now
+                                    </button>
+                                </form>
+                            </div>
+                        {% elif job.status != 'OPEN' %}
+                            <div class="card-glass mb-4" style="border-left: 4px solid {% if job.status == 'COMPLETED' %}var(--primary-500){% elif job.status == 'IN_PROGRESS' %}var(--amber-500){% else %}var(--rose-500){% endif %}; padding: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); font-size: 1.25rem;">
+                                        {% if job.status == 'COMPLETED' %}
+                                            <i class="fa-solid fa-circle-check text-primary"></i>
+                                        {% elif job.status == 'IN_PROGRESS' %}
+                                            <i class="fa-solid fa-spinner fa-spin-pulse text-amber"></i>
+                                        {% else %}
+                                            <i class="fa-solid fa-lock text-rose"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #fff; font-size: 1.05rem; margin-bottom: 0.25rem; font-weight: 700;">
+                                            Proposals Closed ({{ job.get_status_display }})
+                                        </h4>
+                                        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
+                                            This project is currently marked as <strong>{{ job.get_status_display }}</strong> and is no longer accepting new bids.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Right Sidebar Details -->
+                <div>
+                    <!-- Client Quick Status Management Widget -->
+                    {% if is_client_owner or user.is_staff %}
+                        <div class="card-glass mb-4" style="border: 1px solid rgba(79, 70, 229, 0.35); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h4 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0;">
+                                    <i class="fa-solid fa-sliders text-primary me-1"></i> Project Status
+                                </h4>
+                                <span class="admin-badge {% if job.status == 'OPEN' %}badge-open{% elif job.status == 'IN_PROGRESS' %}badge-in_progress{% elif job.status == 'COMPLETED' %}badge-completed{% else %}badge-closed{% endif %}">
+                                    {{ job.get_status_display }}
+                                </span>
+                            </div>
+                            <form method="POST" action="{% url 'update_job_status' slug=job.slug %}" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                                {% csrf_token %}
+                                <div>
+                                    <label class="form-label" style="font-size: 0.8rem; color: var(--text-subtle);">Change Status:</label>
+                                    <select name="status" class="form-control" style="font-size: 0.88rem; padding: 0.45rem 0.75rem;">
+                                        <option value="OPEN" {% if job.status == 'OPEN' %}selected{% endif %}>🟢 Open for Bids</option>
+                                        <option value="IN_PROGRESS" {% if job.status == 'IN_PROGRESS' %}selected{% endif %}>🟡 In Progress</option>
+                                        <option value="COMPLETED" {% if job.status == 'COMPLETED' %}selected{% endif %}>🟣 Completed</option>
+                                        <option value="CLOSED" {% if job.status == 'CLOSED' %}selected{% endif %}>🔴 Closed / Archived</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary btn-sm" style="flex: 1;">
+                                        <i class="fa-solid fa-check me-1"></i> Update Status
+                                    </button>
+                                    <a href="{% url 'edit_job' slug=job.slug %}" class="btn btn-outline btn-sm" title="Edit full project post">
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                    <!-- Client Details Card -->
+                    <div class="card-glass mb-4">
+                        <h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 1.25rem;">About The Client</h4>
+                        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem;">
+                            <img src="{{ job.client.avatar_display }}" alt="{{ job.client.username }}" class="avatar-img-sm" style="width: 52px; height: 52px;">
+                            <div>
+                                <div style="font-weight: 700; color: #fff; font-size: 1.05rem;">
+                                    {{ job.client.company_name|default:job.client.get_full_name|default:job.client.username }}
+                                </div>
+                                <div style="font-size: 0.82rem; color: var(--text-subtle);">
+                                    <i class="fa-solid fa-location-dot"></i> {{ job.client.location|default:"Global / Remote" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><i class="fa-solid fa-shield-check text-emerald"></i> Payment Method:</span>
+                                <strong style="color: #fff;">Verified</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><i class="fa-solid fa-briefcase text-emerald"></i> Total Jobs Posted:</span>
+                                <strong style="color: #fff;">{{ job.client.posted_jobs.count }}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><i class="fa-solid fa-wallet text-emerald"></i> Total Spent:</span>
+                                <strong style="color: #fff;">${{ job.client.total_spent|floatformat:0 }}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><i class="fa-regular fa-calendar"></i> Member Since:</span>
+                                <strong style="color: #fff;">{{ job.client.date_joined|date:"M Y" }}</strong>
+                            </div>
+                        </div>
+
+                        {% if user.is_authenticated and user != job.client %}
+                            <a href="{% url 'start_conversation' user_id=job.client.id %}?job_id={{ job.id }}" class="btn btn-outline w-100">
+                                <i class="fa-solid fa-comment-dots"></i> Message Client Directly
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Quick Project Summary -->
+                    <div class="card-glass">
+                        <h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Project Information</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.9rem; color: var(--text-muted);">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Budget Type:</span>
+                                <strong style="color: #fff;">{{ job.get_budget_type_display }}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Experience Level:</span>
+                                <strong style="color: #fff;">{{ job.get_experience_level_display }}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Project Duration:</span>
+                                <strong style="color: #fff;">~{{ job.deadline_days }} days</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Total Proposals:</span>
+                                <strong style="color: #fff;">{{ job.proposal_count }}</strong>
+                            </div>
+                        </div>
+
+                        {% if user.is_authenticated and user.is_freelancer and not user_proposal and job.status == 'OPEN' %}
+                            <a href="#applySection" class="btn btn-primary w-100 mt-3">
+                                <i class="fa-solid fa-arrow-down"></i> Apply to Project
+                            </a>
+                        {% elif not user.is_authenticated %}
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary w-100 mt-3">
+                                Sign In to Apply
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

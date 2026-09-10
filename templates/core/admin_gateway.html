@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Administrator Access Portal | LancerPulse{% endblock %}
+{% block meta_description %}Secure administrative access gateway for LancerPulse staff to authenticate and supervise platform activities.{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; padding-bottom: 5rem; max-width: 1080px;">
+
+    <!-- Gateway Top Banner -->
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 1rem; background: rgba(79, 70, 229, 0.12); border: 1px solid rgba(79, 70, 229, 0.3); border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; color: var(--primary-500); margin-bottom: 1rem;">
+            <i class="fa-solid fa-shield-halved"></i> Platform Staff Command Portal
+        </div>
+        <h1 style="font-size: clamp(2rem, 3.5vw, 2.75rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.75rem;">
+            Executive Administration Gateway
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem; max-width: 650px; margin: 0 auto;">
+            Central access node for LancerPulse platform administrators, database managers, and content moderators.
+        </p>
+    </div>
+
+    <!-- Live System Health Summary Bar -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2.5rem;">
+        <div class="admin-gateway-kpi">
+            <div class="admin-gateway-kpi-icon" style="color: var(--emerald-500); background: rgba(16, 185, 129, 0.12);">
+                <i class="fa-solid fa-server"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">System Status</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.4rem;">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></span>
+                    Operational
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-gateway-kpi">
+            <div class="admin-gateway-kpi-icon" style="color: var(--primary-500); background: rgba(79, 70, 229, 0.12);">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Staff Accounts</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+                    {{ stats.total_staff }} Registered
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-gateway-kpi">
+            <div class="admin-gateway-kpi-icon" style="color: var(--cyan-500); background: rgba(14, 165, 233, 0.12);">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Platform Users</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+                    {{ stats.total_users }} Members
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-gateway-kpi">
+            <div class="admin-gateway-kpi-icon" style="color: var(--violet-500); background: rgba(139, 92, 246, 0.12);">
+                <i class="fa-solid fa-handshake"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Active Contracts</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+                    {{ stats.active_contracts }} Running
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Gateway Box -->
+    {% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+        <!-- Authorized Admin State -->
+        <div class="admin-gateway-card" style="margin-bottom: 2rem;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.75rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="{{ user.avatar_display }}" alt="{{ user.username }}" class="avatar-img-sm" style="width: 52px; height: 52px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">{{ user.get_full_name|default:user.username }}</h2>
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px;">
+                                <i class="fa-solid fa-circle-check"></i> Staff Verified
+                            </span>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">
+                            Active session as Platform Administrator (@{{ user.username }})
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="{% url 'platform_admin' %}" class="btn btn-primary" id="btnGoToCommandCenter">
+                        <i class="fa-solid fa-gauge-high"></i> Open Command Center
+                    </a>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                Quick Administrative Hubs
+            </h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <a href="{% url 'platform_admin' %}?tab=overview" class="admin-hub-link">
+                    <div class="admin-hub-icon" style="background: rgba(79, 70, 229, 0.12); color: var(--primary-500);">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-main);">Platform Overview</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time GMV, registrations & metrics</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'platform_admin' %}?tab=users" class="admin-hub-link">
+                    <div class="admin-hub-icon" style="background: rgba(14, 165, 233, 0.12); color: var(--cyan-500);">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-main);">User Management</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Inspect roles, toggle staff & availability</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'platform_admin' %}?tab=jobs" class="admin-hub-link">
+                    <div class="admin-hub-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--amber-500);">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-main);">Job Moderation</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Inspect job postings, budgets & lifecycle</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'platform_admin' %}?tab=contracts" class="admin-hub-link">
+                    <div class="admin-hub-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--emerald-500);">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-main);">Contracts & Escrow</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Manage active engagements and payouts</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    {% elif user.is_authenticated %}
+        <!-- Authenticated but Non-Staff State -->
+        <div class="admin-gateway-card" style="max-width: 620px; margin: 0 auto; text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); color: var(--amber-500); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">
+                Staff Privileges Required
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                You are currently signed in as <strong>@{{ user.username }}</strong> with role <strong>{{ user.get_role_display }}</strong>.
+                The Platform Command Center is restricted to verified administrators and staff members.
+            </p>
+
+            <div style="background: var(--bg-card-hover); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.75rem; text-align: left;">
+                <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-main);">
+                    Need Administrator Access?
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                    Sign in with an account that has <code>is_staff=True</code> or <code>is_superuser=True</code> (e.g. <code>admin</code> or <code>hit</code>).
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'logout' %}?next={% url 'admin_gateway' %}" class="btn btn-primary" id="btnSwitchToAdmin">
+                    <i class="fa-solid fa-right-from-bracket"></i> Switch Account
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline" id="btnReturnDashboard">
+                    <i class="fa-solid fa-gauge"></i> Return to My Dashboard
+                </a>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Unauthenticated Guest State -> Direct Admin Sign-in Portal -->
+        <div class="admin-gateway-grid">
+            <!-- Left Column: Admin Sign-in Form -->
+            <div class="admin-gateway-card">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem;">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">Admin Direct Authentication</h2>
+                        <div style="font-size: 0.82rem; color: var(--text-muted);">Enter administrator credentials to enter Command Center</div>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'admin_gateway' %}" id="adminLoginForm">
+                    {% csrf_token %}
+                    
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label for="admin_username" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-main);">
+                            <i class="fa-solid fa-user" style="color: var(--primary-500); margin-right: 4px;"></i> Administrator Username
+                        </label>
+                        <input type="text" name="username" id="admin_username" class="form-control" placeholder="e.g. admin or hit" required autocomplete="username" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-main);">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="admin_password" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-main);">
+                            <i class="fa-solid fa-key" style="color: var(--primary-500); margin-right: 4px;"></i> Administrator Password
+                        </label>
+                        <input type="password" name="password" id="admin_password" class="form-control" placeholder="••••••••••••" required autocomplete="current-password" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-main);">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="btnAdminSubmit" style="padding: 0.85rem; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-shield-halved"></i> Authenticate & Enter Command Center
+                    </button>
+                </form>
+
+                <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: center; align-items: center; font-size: 0.85rem;">
+                    <a href="{% url 'login' %}" style="color: var(--text-muted); text-decoration: none;">
+                        <i class="fa-solid fa-arrow-left"></i> Standard User Login
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Column: System Access Details & Developer Guidance -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="admin-gateway-card">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-tower-broadcast" style="color: var(--primary-500);"></i> Administrative Oversight
+                    </h3>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+                        The LancerPulse Platform Administration Panel grants high-level control over the whole marketplace:
+                    </p>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem; color: var(--text-main);">
+                        <li style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fa-solid fa-check text-emerald"></i> Full user lifecycle and staff privilege assignment
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fa-solid fa-check text-emerald"></i> Job moderation, approval, and status overrides
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fa-solid fa-check text-emerald"></i> Proposal audits and contract dispute supervision
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fa-solid fa-check text-emerald"></i> Gross Merchandise Volume (GMV) and transaction auditing
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fa-solid fa-check text-emerald"></i> Direct database browser with Django ORM integration
+                        </li>
+                    </ul>
+                </div>
+
+                {% if debug_mode and staff_dev_accounts %}
+                <div class="admin-gateway-card" style="border-color: rgba(79, 70, 229, 0.35); background: rgba(79, 70, 229, 0.04);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: 700; font-size: 0.9rem; color: var(--primary-500);">
+                        <i class="fa-solid fa-code"></i> Developer Mode Quick Info
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                        Configured staff accounts in active database:
+                    </p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        {% for staff_name in staff_dev_accounts %}
+                            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('admin_username').value='{{ staff_name }}'; document.getElementById('admin_password').focus();" style="font-size: 0.78rem; padding: 0.25rem 0.65rem;">
+                                <i class="fa-solid fa-user-gear"></i> {{ staff_name }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

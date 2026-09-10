@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} | LancerPulse Profile{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem;">
+    <!-- Profile Card Header -->
+    <div class="card-glass mb-4" style="padding: 2.5rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap;">
+                <div class="freelancer-avatar-wrap">
+                    <img src="{{ profile_user.avatar_display }}" alt="{{ profile_user.username }}" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-500);">
+                    <span class="status-indicator {% if not profile_user.is_available_for_hire %}busy{% endif %}" style="width: 18px; height: 18px; bottom: 5px; right: 5px;"></span>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <h1 style="font-size: 2rem; font-weight: 800; color: #fff;">
+                            {{ profile_user.get_full_name|default:profile_user.username }}
+                        </h1>
+                        <i class="fa-solid fa-circle-check text-cyan" style="color: var(--cyan-500); font-size: 1.2rem;" title="Verified Professional"></i>
+                        <span class="badge-role {% if profile_user.role == 'FREELANCER' %}badge-freelancer{% elif profile_user.role == 'CLIENT' %}badge-client{% else %}badge-both{% endif %}">
+                            {{ profile_user.get_role_display }}
+                        </span>
+                    </div>
+
+                    <div style="font-size: 1.05rem; color: var(--primary-500); font-weight: 600; margin: 0.35rem 0;">
+                        {{ profile_user.headline|default:"Professional Specialist" }}
+                    </div>
+
+                    <div style="display: flex; gap: 1.25rem; font-size: 0.88rem; color: var(--text-muted); flex-wrap: wrap; align-items: center;">
+                        <span><i class="fa-solid fa-location-dot"></i> {{ profile_user.location|default:"Remote Worldwide" }}</span>
+                        <span><i class="fa-solid fa-star text-amber"></i> {{ profile_user.average_rating }} ({{ profile_user.review_count }} reviews)</span>
+                        <span><i class="fa-solid fa-medal text-emerald"></i> {{ profile_user.job_success_score }}% Job Success</span>
+                        {% if profile_user.company_name %}
+                            <span><i class="fa-solid fa-building"></i> {{ profile_user.company_name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Actions -->
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem;">
+                {% if profile_user.is_freelancer %}
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #fff;">
+                        ${{ profile_user.hourly_rate|floatformat:0 }}<span style="font-size: 0.85rem; color: var(--text-subtle); font-weight: 500;">/hr</span>
+                    </div>
+                {% endif %}
+
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    {% if user.is_authenticated and user != profile_user %}
+                        {% if user.is_client and profile_user.is_freelancer %}
+                            <button type="button" class="btn btn-emerald" data-modal-target="modalInviteTalent">
+                                <i class="fa-solid fa-paper-plane me-1"></i> Invite to Job
+                            </button>
+                        {% endif %}
+                        <a href="{% url 'start_conversation' user_id=profile_user.id %}" class="btn btn-primary">
+                            <i class="fa-solid fa-comment-dots"></i> Message / Network
+                        </a>
+                    {% elif user == profile_user %}
+                        <a href="{% url 'edit_profile' %}" class="btn btn-outline">
+                            <i class="fa-solid fa-sliders"></i> Edit Profile
+                        </a>
+                    {% endif %}
+
+                    {% if profile_user.github %}
+                        <a href="{{ profile_user.github }}" target="_blank" rel="noopener" class="btn btn-outline" title="GitHub">
+                            <i class="fa-brands fa-github"></i>
+                        </a>
+                    {% endif %}
+                    {% if profile_user.website %}
+                        <a href="{{ profile_user.website }}" target="_blank" rel="noopener" class="btn btn-outline" title="Website">
+                            <i class="fa-solid fa-globe"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+        <style>
+            @media (min-width: 900px) {
+                .profile-content-grid {
+                    display: grid;
+                    grid-template-columns: 2fr 1fr;
+                    gap: 2rem;
+                }
+            }
+        </style>
+        <div class="profile-content-grid">
+            <!-- Left Column: Bio, Portfolio, Reviews -->
+            <div>
+                <!-- Bio -->
+                <div class="card-glass mb-4">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">About & Background</h3>
+                    <div style="font-size: 0.96rem; color: var(--text-muted); line-height: 1.8; white-space: pre-line;">
+                        {{ profile_user.bio|default:"No bio provided yet." }}
+                    </div>
+                </div>
+
+                <!-- Portfolio Showcase -->
+                {% if profile_user.is_freelancer %}
+                    <div class="card-glass mb-4">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Featured Portfolio Projects</h3>
+                            {% if user == profile_user %}
+                                <a href="{% url 'edit_profile' %}#portfolioSection" class="btn btn-outline btn-sm">
+                                    <i class="fa-solid fa-plus"></i> Add Item
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem;">
+                            {% for item in portfolio_items %}
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+                                    {% if item.image_url %}
+                                        <img src="{{ item.image_url }}" alt="{{ item.title }}" style="width: 100%; height: 140px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.75rem;">
+                                    {% endif %}
+                                    <h4 style="font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">{{ item.title }}</h4>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.75rem;">{{ item.description|truncatechars:120 }}</p>
+                                    
+                                    {% if item.tags %}
+                                        <div style="font-size: 0.75rem; color: var(--primary-500); margin-bottom: 0.75rem;">{{ item.tags }}</div>
+                                    {% endif %}
+
+                                    {% if item.project_url %}
+                                        <a href="{{ item.project_url }}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="align-self: flex-start;">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Live Demo
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% empty %}
+                                <p class="text-muted" style="grid-column: 1 / -1;">No portfolio items uploaded yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Client Reviews Section -->
+                <div class="card-glass">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 1.25rem;">
+                        Client Reviews & Testimonials ({{ reviews.count }})
+                    </h3>
+                    {% for rev in reviews %}
+                        <div style="padding: 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                                    <img src="{{ rev.reviewer.avatar_display }}" alt="{{ rev.reviewer.username }}" class="avatar-img-sm" style="width: 32px; height: 32px;">
+                                    <div>
+                                        <strong style="color: #fff; font-size: 0.95rem;">{{ rev.reviewer.get_full_name|default:rev.reviewer.username }}</strong>
+                                        <div style="font-size: 0.75rem; color: var(--text-subtle);">{{ rev.contract.job.title }}</div>
+                                    </div>
+                                </div>
+                                <div style="color: var(--amber-500); font-size: 0.9rem;">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= rev.rating %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">"{{ rev.comment }}"</p>
+                            <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 0.5rem;">{{ rev.created_at|date:"F d, Y" }}</div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No reviews recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Column: Skills & Stats -->
+            <div>
+                <!-- Skills Card -->
+                <div class="card-glass mb-4">
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Skills & Technologies</h4>
+                    <div class="skills-wrap">
+                        {% for s in profile_user.skills.all %}
+                            <span class="skill-tag" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">{{ s.name }}</span>
+                        {% empty %}
+                            <span class="skill-tag">General Specialist</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Professional Stats Card -->
+                <div class="card-glass">
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Work Record</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.9rem; color: var(--text-muted);">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Experience Level:</span>
+                            <strong style="color: #fff;">{{ profile_user.get_experience_level_display }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Availability:</span>
+                            <strong style="color: {% if profile_user.is_available_for_hire %}var(--emerald-500){% else %}var(--amber-500){% endif %};">
+                                {% if profile_user.is_available_for_hire %}Available for Work{% else %}Currently Booked{% endif %}
+                            </strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Job Success Rate:</span>
+                            <strong style="color: var(--emerald-500);">{{ profile_user.job_success_score }}%</strong>
+                        </div>
+                        {% if profile_user.is_freelancer %}
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Completed Contracts:</span>
+                                <strong style="color: #fff;">{{ profile_user.freelancer_contracts.count }}</strong>
+                            </div>
+                        {% endif %}
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Member Since:</span>
+                            <strong style="color: #fff;">{{ profile_user.date_joined|date:"M Y" }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Invite Freelancer to Job -->
+{% if user.is_authenticated and user != profile_user and user.is_client and profile_user.is_freelancer %}
+<div class="modal-overlay" id="modalInviteTalent">
+    <div class="modal-card" style="max-width: 520px;">
+        <div class="modal-header">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff;">
+                <i class="fa-solid fa-envelope-open-text text-primary me-2"></i> Invite {{ profile_user.first_name|default:profile_user.username }}
+            </h3>
+            <button type="button" class="modal-close-btn" data-modal-close>&times;</button>
+        </div>
+        <form method="POST" action="{% url 'invite_freelancer' freelancer_id=profile_user.id %}">
+            {% csrf_token %}
+            <div style="padding: 1.5rem;">
+                <div class="form-group mb-3">
+                    <label class="form-label">Select Your Open Job *</label>
+                    <select name="job" class="form-control select-modern" required>
+                        <option value="">-- Choose an open project --</option>
+                        {% for j in client_open_jobs %}
+                            <option value="{{ j.id }}">{{ j.title }} ({{ j.budget_display }})</option>
+                        {% empty %}
+                            <option value="" disabled>No open projects available. Post a job first!</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Personalized Invitation Message</label>
+                    <textarea name="message" class="form-control" rows="4" placeholder="Hello! We reviewed your profile and believe your skillset is ideal for this project. We would love for you to submit a proposal..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-subtle);">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" {% if not client_open_jobs %}disabled{% endif %}>
+                    Send Job Invitation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

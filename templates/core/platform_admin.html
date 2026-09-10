@@ -1,0 +1,870 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Platform Administration Command Center | LancerPulse{% endblock %}
+{% block meta_description %}Executive management portal for LancerPulse administrators to monitor, moderate, and inspect platform data.{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+    <!-- Top Admin Header -->
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle);">
+        <div>
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(79, 70, 229, 0.12); border: 1px solid rgba(79, 70, 229, 0.3); border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; color: var(--primary-500); margin-bottom: 0.5rem;">
+                <i class="fa-solid fa-shield-halved"></i> Platform Staff Privileges
+            </div>
+            <h1 style="font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em;">
+                Executive Command Center
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 680px; margin-top: 0.25rem;">
+                Full platform oversight. Inspect every user, job post, bid proposal, active contract, message thread, and review across LancerPulse.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-sm" id="btnMyDashboard">
+                <i class="fa-solid fa-gauge"></i> My Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Real-Time Platform KPI Metrics Grid -->
+    <div class="admin-stats-grid">
+        <!-- Total Users -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(79, 70, 229, 0.12); color: var(--primary-500);">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <div class="admin-stat-val">{{ stats.total_users }}</div>
+                <div class="admin-stat-lbl">Registered Users</div>
+                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 2px;">
+                    {{ stats.freelancers_count }} Freelancers &bull; {{ stats.clients_count }} Clients
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Jobs -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(14, 165, 233, 0.12); color: var(--cyan-500);">
+                <i class="fa-solid fa-briefcase"></i>
+            </div>
+            <div>
+                <div class="admin-stat-val">{{ stats.total_jobs }}</div>
+                <div class="admin-stat-lbl">Posted Jobs</div>
+                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 2px;">
+                    <span class="text-emerald" style="font-weight: 700;">{{ stats.open_jobs }} Open</span> &bull; {{ stats.completed_jobs }} Completed
+                </div>
+            </div>
+        </div>
+
+        <!-- Proposals & Bids -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--amber-500);">
+                <i class="fa-solid fa-file-signature"></i>
+            </div>
+            <div>
+                <div class="admin-stat-val">{{ stats.total_proposals }}</div>
+                <div class="admin-stat-lbl">Total Proposals</div>
+                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 2px;">
+                    <span class="text-emerald">{{ stats.accepted_proposals }} Accepted</span> &bull; {{ stats.pending_proposals }} Pending
+                </div>
+            </div>
+        </div>
+
+        <!-- Contracts & GMV -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--emerald-500);">
+                <i class="fa-solid fa-handshake"></i>
+            </div>
+            <div>
+                <div class="admin-stat-val">${{ stats.total_gmv|floatformat:2 }}</div>
+                <div class="admin-stat-lbl">Platform GMV</div>
+                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 2px;">
+                    {{ stats.active_contracts }} Active &bull; {{ stats.completed_contracts }} Completed
+                </div>
+            </div>
+        </div>
+
+        <!-- Messaging Volume -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(139, 92, 246, 0.12); color: var(--violet-500);">
+                <i class="fa-solid fa-comments"></i>
+            </div>
+            <div>
+                <div class="admin-stat-val">{{ stats.total_messages }}</div>
+                <div class="admin-stat-lbl">Messages Logged</div>
+                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 2px;">
+                    In {{ stats.total_conversations }} Conversations
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Reviews & Rating -->
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(225, 29, 72, 0.12); color: var(--rose-500);">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div>
+                <div class="admin-stat-val">{{ stats.avg_rating }} ★</div>
+                <div class="admin-stat-lbl">Platform Rating</div>
+                <div style="font-size: 0.75rem; color: var(--text-subtle); margin-top: 2px;">
+                    Across {{ stats.total_reviews }} Verified Reviews
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Navigation Tabs -->
+    <div class="admin-tabs-nav" id="adminTabsNav">
+        <a href="?tab=overview" class="admin-tab-link {% if active_tab == 'overview' %}active{% endif %}" id="tabOverview">
+            <i class="fa-solid fa-chart-pie"></i> Overview
+        </a>
+        <a href="?tab=users" class="admin-tab-link {% if active_tab == 'users' %}active{% endif %}" id="tabUsers">
+            <i class="fa-solid fa-users"></i> Users <span class="admin-tab-badge">{{ users_list|length }}</span>
+        </a>
+        <a href="?tab=jobs" class="admin-tab-link {% if active_tab == 'jobs' %}active{% endif %}" id="tabJobs">
+            <i class="fa-solid fa-briefcase"></i> Jobs <span class="admin-tab-badge">{{ jobs_list|length }}</span>
+        </a>
+        <a href="?tab=proposals" class="admin-tab-link {% if active_tab == 'proposals' %}active{% endif %}" id="tabProposals">
+            <i class="fa-solid fa-file-signature"></i> Proposals <span class="admin-tab-badge">{{ proposals_list|length }}</span>
+        </a>
+        <a href="?tab=contracts" class="admin-tab-link {% if active_tab == 'contracts' %}active{% endif %}" id="tabContracts">
+            <i class="fa-solid fa-handshake"></i> Contracts <span class="admin-tab-badge">{{ contracts_list|length }}</span>
+        </a>
+        <a href="?tab=messages" class="admin-tab-link {% if active_tab == 'messages' %}active{% endif %}" id="tabMessages">
+            <i class="fa-solid fa-comments"></i> Communications <span class="admin-tab-badge">{{ messages_list|length }}</span>
+        </a>
+        <a href="?tab=reviews" class="admin-tab-link {% if active_tab == 'reviews' %}active{% endif %}" id="tabReviews">
+            <i class="fa-solid fa-star"></i> Reviews <span class="admin-tab-badge">{{ reviews_list|length }}</span>
+        </a>
+        <a href="?tab=taxonomy" class="admin-tab-link {% if active_tab == 'taxonomy' %}active{% endif %}" id="tabTaxonomy">
+            <i class="fa-solid fa-tags"></i> Taxonomy & Skills
+        </a>
+    </div>
+
+    <!-- TAB 1: OVERVIEW -->
+    {% if active_tab == 'overview' %}
+    <div class="admin-tab-content">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <!-- Health & Distribution -->
+            <div class="card-glass">
+                <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-shield-heart" style="color: var(--primary-500);"></i> Platform Architecture Health
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--bg-card-hover); border-radius: var(--radius-sm);">
+                        <span style="color: var(--text-muted); font-size: 0.88rem;">Django Core Engine</span>
+                        <span class="badge-role" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3);">Django 6.0 Active</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--bg-card-hover); border-radius: var(--radius-sm);">
+                        <span style="color: var(--text-muted); font-size: 0.88rem;">Production Static Asset Engine</span>
+                        <span class="badge-role" style="background: rgba(14, 165, 233, 0.15); color: #0284C7; border: 1px solid rgba(14, 165, 233, 0.3);">WhiteNoise Compressed</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--bg-card-hover); border-radius: var(--radius-sm);">
+                        <span style="color: var(--text-muted); font-size: 0.88rem;">Escrow / Payment State</span>
+                        <span class="badge-role" style="background: rgba(245, 158, 11, 0.15); color: #D97706; border: 1px solid rgba(245, 158, 11, 0.3);">Contract Protection Enabled</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--bg-card-hover); border-radius: var(--radius-sm);">
+                        <span style="color: var(--text-muted); font-size: 0.88rem;">Staff Administrators</span>
+                        <span class="badge-role badge-both">{{ stats.staff_count }} Staff Members</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-main);">Quick Action Short-Cuts</h4>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="{% url 'create_job' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-plus"></i> Post Job as Client</a>
+                        <a href="?tab=taxonomy" class="btn btn-outline btn-sm"><i class="fa-solid fa-folder-plus"></i> Add Category / Skill</a>
+                        <a href="/admin/" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Raw DB Browser</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Platform Activity Feed -->
+            <div class="card-glass">
+                <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-bolt" style="color: var(--amber-500);"></i> Recent Platform Activity
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    {% for j in jobs_list|slice:":3" %}
+                        <div style="padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Job Posted: {{ j.title|truncatechars:35 }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-subtle);">by @{{ j.client.username }} &bull; {{ j.created_at|timesince }} ago</div>
+                            </div>
+                            <span class="admin-badge badge-{{ j.status|lower }}">{{ j.get_status_display }}</span>
+                        </div>
+                    {% endfor %}
+
+                    {% for c in contracts_list|slice:":2" %}
+                        <div style="padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Contract: ${{ c.total_amount|floatformat:2 }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-subtle);">Client: @{{ c.client.username }} &bull; Freelancer: @{{ c.freelancer.username }}</div>
+                            </div>
+                            <span class="admin-badge badge-{{ c.status|lower }}">{{ c.get_status_display }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 2: ALL USERS -->
+    {% if active_tab == 'users' %}
+    <div class="admin-tab-content">
+        <div class="admin-table-container">
+            <!-- Search & Filters -->
+            <div class="admin-filter-bar">
+                <form method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; width: 100%;">
+                    <input type="hidden" name="tab" value="users">
+                    <div style="flex: 1; min-width: 220px; position: relative;">
+                        <input type="text" name="user_q" value="{{ user_q }}" class="form-control" placeholder="Search by username, name, email...">
+                    </div>
+                    <select name="user_role" class="form-control" style="width: auto; min-width: 160px;">
+                        <option value="">All Roles</option>
+                        <option value="FREELANCER" {% if user_role == 'FREELANCER' %}selected{% endif %}>Freelancers</option>
+                        <option value="CLIENT" {% if user_role == 'CLIENT' %}selected{% endif %}>Clients</option>
+                        <option value="BOTH" {% if user_role == 'BOTH' %}selected{% endif %}>Both (Freelance & Hire)</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Filter</button>
+                    {% if user_q or user_role %}
+                        <a href="?tab=users" class="btn btn-outline btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Table of Every User -->
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Hourly Rate</th>
+                            <th>Success Score</th>
+                            <th>Available</th>
+                            <th>Staff Admin</th>
+                            <th>Joined</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users_list %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <img src="{{ u.avatar_display }}" alt="{{ u.username }}" class="avatar-img-sm" style="width: 36px; height: 36px;">
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--text-main);">
+                                            {{ u.get_full_name|default:u.username }}
+                                            {% if u.is_superuser %}<span title="Superuser" style="color: var(--amber-500); font-size: 0.75rem;">★ Admin</span>{% endif %}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-subtle);">@{{ u.username }} &bull; {{ u.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-role {% if u.role == 'FREELANCER' %}badge-freelancer{% elif u.role == 'CLIENT' %}badge-client{% else %}badge-both{% endif %}">
+                                    {{ u.get_role_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if u.role != 'CLIENT' %}
+                                    <strong>${{ u.hourly_rate|floatformat:2 }}/hr</strong>
+                                {% else %}
+                                    <span style="color: var(--text-subtle);">N/A (Client)</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.role != 'CLIENT' %}
+                                    <span style="font-weight: 700; color: var(--emerald-500);">{{ u.job_success_score }}%</span>
+                                {% else %}
+                                    <span style="color: var(--text-subtle);">Spent: ${{ u.total_spent|floatformat:0 }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.is_available_for_hire %}
+                                    <span class="admin-badge badge-active"><i class="fa-solid fa-circle" style="font-size: 6px;"></i> Available</span>
+                                {% else %}
+                                    <span class="admin-badge badge-closed">Busy / Off</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.is_staff %}
+                                    <span class="admin-badge badge-accepted"><i class="fa-solid fa-check"></i> Staff</span>
+                                {% else %}
+                                    <span style="color: var(--text-subtle); font-size: 0.8rem;">Standard</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.8rem; color: var(--text-subtle);">
+                                {{ u.date_joined|date:"M d, Y" }}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 0.35rem;">
+                                    <a href="{% url 'profile' username=u.username %}" class="btn btn-outline btn-sm" title="View Public Profile" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <!-- Toggle Availability -->
+                                    <form method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_user_availability">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit" class="btn btn-outline btn-sm" title="Toggle Hire Availability" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                            <i class="fa-solid fa-toggle-on"></i>
+                                        </button>
+                                    </form>
+                                    <!-- Toggle Staff -->
+                                    {% if u != user %}
+                                    <form method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_user_staff">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit" class="btn btn-outline btn-sm" title="Toggle Staff Access" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                            <i class="fa-solid fa-shield"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <a href="/admin/accounts/customuser/{{ u.id }}/change/" target="_blank" class="btn btn-outline btn-sm" title="Edit User" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No users matched your search criteria.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 3: ALL JOBS -->
+    {% if active_tab == 'jobs' %}
+    <div class="admin-tab-content">
+        <div class="admin-table-container">
+            <!-- Filter Bar -->
+            <div class="admin-filter-bar">
+                <form method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; width: 100%;">
+                    <input type="hidden" name="tab" value="jobs">
+                    <div style="flex: 1; min-width: 220px;">
+                        <input type="text" name="job_q" value="{{ job_q }}" class="form-control" placeholder="Search job title, client, category...">
+                    </div>
+                    <select name="job_status" class="form-control" style="width: auto; min-width: 150px;">
+                        <option value="">All Statuses</option>
+                        <option value="OPEN" {% if job_status == 'OPEN' %}selected{% endif %}>Open</option>
+                        <option value="IN_PROGRESS" {% if job_status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                        <option value="COMPLETED" {% if job_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                        <option value="CLOSED" {% if job_status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Filter</button>
+                    {% if job_q or job_status %}
+                        <a href="?tab=jobs" class="btn btn-outline btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Client</th>
+                            <th>Category</th>
+                            <th>Budget</th>
+                            <th>Proposals</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th style="text-align: right;">Status Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in jobs_list %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'job_detail' slug=j.slug %}" style="font-weight: 700; color: var(--text-main);">
+                                    {{ j.title }}
+                                </a>
+                                <div style="font-size: 0.75rem; color: var(--text-subtle);">
+                                    {{ j.location_type }} &bull; {{ j.get_experience_level_display }}
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{% url 'profile' username=j.client.username %}" style="color: var(--primary-500); font-weight: 600;">
+                                    @{{ j.client.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                                    <i class="{{ j.category.icon }}"></i> {{ j.category.name|default:"General" }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong style="color: var(--emerald-500);">{{ j.budget_display }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge-role" style="background: rgba(99, 102, 241, 0.1); color: var(--primary-500);">
+                                    {{ j.proposal_count }} bids
+                                </span>
+                            </td>
+                            <td>
+                                <span class="admin-badge badge-{{ j.status|lower }}">{{ j.get_status_display }}</span>
+                            </td>
+                            <td style="font-size: 0.8rem; color: var(--text-subtle);">
+                                {{ j.created_at|date:"M d, Y" }}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                                    <form method="POST" style="display: inline-flex; gap: 0.25rem;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="update_job_status">
+                                        <input type="hidden" name="job_id" value="{{ j.id }}">
+                                        <select name="status" class="form-control" style="font-size: 0.75rem; padding: 0.25rem 1.5rem 0.25rem 0.45rem; height: 28px;" onchange="this.form.submit()" aria-label="Update job status">
+                                            <option value="OPEN" {% if j.status == 'OPEN' %}selected{% endif %}>Open</option>
+                                            <option value="IN_PROGRESS" {% if j.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                            <option value="COMPLETED" {% if j.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                                            <option value="CLOSED" {% if j.status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                                        </select>
+                                    </form>
+                                    <a href="/admin/jobs/job/{{ j.id }}/change/" target="_blank" class="btn btn-outline btn-sm" title="Edit in Django Admin" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No jobs found matching the search criteria.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 4: ALL PROPOSALS -->
+    {% if active_tab == 'proposals' %}
+    <div class="admin-tab-content">
+        <div class="admin-table-container">
+            <div class="admin-filter-bar">
+                <form method="GET" style="display: flex; gap: 0.75rem; width: 100%;">
+                    <input type="hidden" name="tab" value="proposals">
+                    <input type="text" name="prop_q" value="{{ prop_q }}" class="form-control" placeholder="Search proposal by job title or freelancer username...">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                    {% if prop_q %}
+                        <a href="?tab=proposals" class="btn btn-outline btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Job</th>
+                            <th>Freelancer</th>
+                            <th>Bid Amount</th>
+                            <th>Delivery</th>
+                            <th>Cover Letter Preview</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th style="text-align: right;">Moderation Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in proposals_list %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'job_detail' slug=p.job.slug %}" style="font-weight: 700; color: var(--text-main);">
+                                    {{ p.job.title|truncatechars:35 }}
+                                </a>
+                                <div style="font-size: 0.75rem; color: var(--text-subtle);">Client: @{{ p.job.client.username }}</div>
+                            </td>
+                            <td>
+                                <a href="{% url 'profile' username=p.freelancer.username %}" style="color: var(--primary-500); font-weight: 600;">
+                                    @{{ p.freelancer.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <strong style="color: var(--emerald-500);">${{ p.bid_amount|floatformat:2 }}</strong>
+                            </td>
+                            <td>{{ p.estimated_days }} days</td>
+                            <td>
+                                <span style="font-size: 0.8rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ p.cover_letter }}">
+                                    {{ p.cover_letter }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="admin-badge badge-{{ p.status|lower }}">{{ p.get_status_display }}</span>
+                            </td>
+                            <td style="font-size: 0.8rem; color: var(--text-subtle);">
+                                {{ p.created_at|date:"M d, Y" }}
+                            </td>
+                            <td style="text-align: right;">
+                                <form method="POST" style="display: inline-flex; gap: 0.25rem;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="update_proposal_status">
+                                    <input type="hidden" name="proposal_id" value="{{ p.id }}">
+                                    <select name="status" class="form-control" style="font-size: 0.75rem; padding: 0.25rem 1.5rem 0.25rem 0.45rem; height: 28px;" onchange="this.form.submit()" aria-label="Update proposal status">
+                                        <option value="PENDING" {% if p.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                        <option value="ACCEPTED" {% if p.status == 'ACCEPTED' %}selected{% endif %}>Accept / Hire</option>
+                                        <option value="REJECTED" {% if p.status == 'REJECTED' %}selected{% endif %}>Decline</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No proposals found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 5: ALL CONTRACTS -->
+    {% if active_tab == 'contracts' %}
+    <div class="admin-tab-content">
+        <div class="admin-table-container">
+            <div class="admin-filter-bar">
+                <form method="GET" style="display: flex; gap: 0.75rem; width: 100%;">
+                    <input type="hidden" name="tab" value="contracts">
+                    <input type="text" name="contract_q" value="{{ contract_q }}" class="form-control" placeholder="Search contracts by job, client, or freelancer...">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                    {% if contract_q %}
+                        <a href="?tab=contracts" class="btn btn-outline btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Contract ID</th>
+                            <th>Job Title</th>
+                            <th>Client</th>
+                            <th>Freelancer</th>
+                            <th>Escrow Value</th>
+                            <th>Status</th>
+                            <th>Started</th>
+                            <th style="text-align: right;">Contract Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in contracts_list %}
+                        <tr>
+                            <td><strong>#{{ c.id }}</strong></td>
+                            <td>
+                                <a href="{% url 'job_detail' slug=c.job.slug %}" style="font-weight: 700; color: var(--text-main);">
+                                    {{ c.job.title|truncatechars:35 }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'profile' username=c.client.username %}" style="color: var(--primary-500); font-weight: 600;">
+                                    @{{ c.client.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'profile' username=c.freelancer.username %}" style="color: var(--primary-500); font-weight: 600;">
+                                    @{{ c.freelancer.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <strong style="color: var(--emerald-500); font-size: 1.05rem;">
+                                    ${{ c.total_amount|floatformat:2 }}
+                                </strong>
+                            </td>
+                            <td>
+                                <span class="admin-badge badge-{{ c.status|lower }}">{{ c.get_status_display }}</span>
+                            </td>
+                            <td style="font-size: 0.8rem; color: var(--text-subtle);">
+                                {{ c.created_at|date:"M d, Y" }}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 0.35rem;">
+                                    {% if c.status == 'ACTIVE' %}
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="complete_contract">
+                                            <input type="hidden" name="contract_id" value="{{ c.id }}">
+                                            <button type="submit" class="btn btn-emerald btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" title="Mark as Completed & Release Funds">
+                                                <i class="fa-solid fa-check"></i> Complete
+                                            </button>
+                                        </form>
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="cancel_contract">
+                                            <input type="hidden" name="contract_id" value="{{ c.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" title="Cancel Contract">
+                                                <i class="fa-solid fa-xmark"></i> Cancel
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span style="font-size: 0.78rem; color: var(--text-subtle);">Finalized</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No contracts on file.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 6: ALL COMMUNICATIONS -->
+    {% if active_tab == 'messages' %}
+    <div class="admin-tab-content">
+        <div class="admin-table-container">
+            <div class="admin-filter-bar">
+                <form method="GET" style="display: flex; gap: 0.75rem; width: 100%;">
+                    <input type="hidden" name="tab" value="messages">
+                    <input type="text" name="msg_q" value="{{ msg_q }}" class="form-control" placeholder="Search message content or sender username...">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                    {% if msg_q %}
+                        <a href="?tab=messages" class="btn btn-outline btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Message ID</th>
+                            <th>Sender</th>
+                            <th>Conversation Topic</th>
+                            <th>Message Preview</th>
+                            <th>Read Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in messages_list %}
+                        <tr>
+                            <td>#{{ m.id }}</td>
+                            <td>
+                                <a href="{% url 'profile' username=m.sender.username %}" style="font-weight: 700; color: var(--text-main);">
+                                    @{{ m.sender.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                                    {{ m.conversation.subject|default:"Discussion Thread" }}
+                                    {% if m.conversation.job %}
+                                        &bull; <a href="{% url 'job_detail' slug=m.conversation.job.slug %}" style="color: var(--primary-500);">Job #{{ m.conversation.job.id }}</a>
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="font-size: 0.85rem; color: var(--text-main);">
+                                    {{ m.body|truncatechars:80 }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if m.is_read %}
+                                    <span class="admin-badge badge-accepted">Read</span>
+                                {% else %}
+                                    <span class="admin-badge badge-pending">Unread</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.8rem; color: var(--text-subtle);">
+                                {{ m.created_at|date:"M d, Y H:i" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No messages logged.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 7: ALL REVIEWS -->
+    {% if active_tab == 'reviews' %}
+    <div class="admin-tab-content">
+        <div class="admin-table-container">
+            <div class="admin-filter-bar">
+                <form method="GET" style="display: flex; gap: 0.75rem; width: 100%;">
+                    <input type="hidden" name="tab" value="reviews">
+                    <input type="text" name="rev_q" value="{{ rev_q }}" class="form-control" placeholder="Search reviews by username or comment...">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                    {% if rev_q %}
+                        <a href="?tab=reviews" class="btn btn-outline btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Reviewer</th>
+                            <th>Reviewee</th>
+                            <th>Rating</th>
+                            <th>Feedback Comment</th>
+                            <th>Contract / Job</th>
+                            <th>Date</th>
+                            <th style="text-align: right;">Moderate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reviews_list %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'profile' username=r.reviewer.username %}" style="font-weight: 700; color: var(--text-main);">
+                                    @{{ r.reviewer.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'profile' username=r.reviewee.username %}" style="font-weight: 700; color: var(--primary-500);">
+                                    @{{ r.reviewee.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <span style="color: var(--amber-500); font-weight: 800;">
+                                    {{ r.rating }} ★
+                                </span>
+                            </td>
+                            <td>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+                                    "{{ r.comment }}"
+                                </p>
+                            </td>
+                            <td>
+                                <span style="font-size: 0.8rem; color: var(--text-subtle);">
+                                    Contract #{{ r.contract.id }}: {{ r.contract.job.title|truncatechars:25 }}
+                                </span>
+                            </td>
+                            <td style="font-size: 0.8rem; color: var(--text-subtle);">
+                                {{ r.created_at|date:"M d, Y" }}
+                            </td>
+                            <td style="text-align: right;">
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Moderate and remove this review permanently?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_review">
+                                    <input type="hidden" name="review_id" value="{{ r.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" title="Delete Inappropriate Review">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No reviews registered on platform.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB 8: TAXONOMY (CATEGORIES & SKILLS) -->
+    {% if active_tab == 'taxonomy' %}
+    <div class="admin-tab-content">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <!-- Categories Card -->
+            <div class="card-glass">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">
+                        <i class="fa-solid fa-folder-tree" style="color: var(--primary-500);"></i> Job Categories ({{ categories|length }})
+                    </h3>
+                </div>
+
+                <!-- Add Category Form -->
+                <form method="POST" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-card-hover); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_category">
+                    <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 0.5rem;">Quick-Add New Category</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <input type="text" name="name" class="form-control" placeholder="Category Name (e.g. Cybersecurity)" required>
+                        <input type="text" name="icon" class="form-control" placeholder="FontAwesome Icon (e.g. fa-solid fa-shield-halved)" value="fa-solid fa-briefcase">
+                        <textarea name="description" class="form-control" rows="2" placeholder="Short description..."></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm mt-1"><i class="fa-solid fa-plus"></i> Create Category</button>
+                    </div>
+                </form>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto;">
+                    {% for cat in categories %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+                            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                                <i class="{{ cat.icon }}" style="color: var(--primary-500);"></i>
+                                <span style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">{{ cat.name }}</span>
+                            </div>
+                            <span class="badge-role badge-both">{{ cat.job_count }} jobs</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Skills Card -->
+            <div class="card-glass">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">
+                        <i class="fa-solid fa-tags" style="color: var(--cyan-500);"></i> Platform Skills ({{ skills|length }})
+                    </h3>
+                </div>
+
+                <!-- Add Skill Form -->
+                <form method="POST" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-card-hover); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_skill">
+                    <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 0.5rem;">Quick-Add New Skill</div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" name="name" class="form-control" style="flex: 1; min-width: 150px;" placeholder="Skill Name (e.g. LangChain)" required>
+                        <input type="text" name="category" class="form-control" style="width: 140px;" placeholder="Category Tag" value="Engineering">
+                        <button type="submit" class="btn btn-emerald btn-sm"><i class="fa-solid fa-plus"></i> Add Skill</button>
+                    </div>
+                </form>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 400px; overflow-y: auto;">
+                    {% for sk in skills %}
+                        <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-full); font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">
+                            <span>{{ sk.name }}</span>
+                            <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.15); color: var(--primary-500); padding: 1px 5px; border-radius: var(--radius-full);">{{ sk.user_count }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

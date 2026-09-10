@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 - Page Not Found | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem 1.25rem 6rem; text-align: center; max-width: 680px;">
+    <div class="card-glass" style="padding: 4rem 2rem; border-color: rgba(99, 102, 241, 0.35);">
+        <div style="width: 84px; height: 84px; margin: 0 auto 1.5rem; border-radius: var(--radius-lg); background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; font-size: 2.75rem; color: var(--primary-500); box-shadow: var(--glow-primary);">
+            <i class="fa-solid fa-compass-drafting"></i>
+        </div>
+        <div class="hero-badge" style="margin-bottom: 1rem;"><i class="fa-solid fa-triangle-exclamation"></i> Error 404</div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+            Lost in Cyberspace
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2.5rem;">
+            The project, proposal, or profile URL you were looking for might have been moved, renamed, or closed.
+        </p>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'home' %}" class="btn btn-primary btn-md">
+                <i class="fa-solid fa-house"></i> Return Home
+            </a>
+            <a href="{% url 'job_list' %}" class="btn btn-outline btn-md">
+                <i class="fa-solid fa-briefcase"></i> Explore Jobs
+            </a>
+            <a href="{% url 'freelancers' %}" class="btn btn-outline btn-md">
+                <i class="fa-solid fa-users"></i> Browse Network
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

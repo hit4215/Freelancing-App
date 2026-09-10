@@ -1,0 +1,439 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LancerPulse | Next-Gen Freelance & Networking Ecosystem{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Connect, hire elite talent, collaborate on projects, and network directly with world-class freelancers and top clients.{% endblock %}">
+    
+    <!-- Favicon & PWA Theme -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+    <meta name="theme-color" content="#090D16">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Open Graph & Social Cards -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="LancerPulse | Elite Freelance & Networking Ecosystem">
+    <meta property="og:description" content="Direct hiring marketplace plus peer-to-peer freelancer networking for top developers, AI architects, and designers.">
+    <meta property="og:site_name" content="LancerPulse">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Modern Typography: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom Design System Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Immediate Theme Application (Prevents White/Black Theme Flash) -->
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('lancerpulse_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('theme-dark');
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('theme-dark');
+                });
+            }
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- Header & Navigation -->
+    <header class="site-header">
+        <div class="container">
+            <nav class="navbar">
+                <!-- Brand Logo -->
+                <a href="{% url 'home' %}" class="brand-logo" id="brandLogo">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-bolt-lightning"></i>
+                    </div>
+                    <span>Lancer<span style="color: #fff;">Pulse</span></span>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'job_list' %}" class="nav-link {% if request.resolver_match.url_name == 'job_list' %}active{% endif %}" id="navJobs">
+                            <i class="fa-solid fa-briefcase"></i> Explore Jobs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'freelancers' %}" class="nav-link {% if request.resolver_match.url_name == 'freelancers' %}active{% endif %}" id="navFreelancers">
+                            <i class="fa-solid fa-users-viewfinder"></i> Freelancer Network
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Action Controls -->
+                <div class="nav-actions">
+                    <!-- Theme Toggle Switcher (White / Black) -->
+                    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Black/White Theme" title="Toggle Black/White Theme">
+                        <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
+                    </button>
+
+                    <!-- Admin Panel Dropdown Button (Accessible with executive command hubs) -->
+                    <div class="admin-nav-dropdown-wrapper" id="adminNavDropdown">
+                        <a href="{% url 'admin_gateway' %}" class="btn btn-admin-nav btn-sm" id="navAdminPanelBtn" title="Platform Administration Command Center">
+                            <span class="admin-badge-dot"></span>
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span class="admin-btn-text">Admin Panel</span>
+                            <i class="fa-solid fa-chevron-down admin-chevron"></i>
+                        </a>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <div class="admin-dropdown-header">
+                                <div class="admin-dropdown-title"><i class="fa-solid fa-shield-halved"></i> Platform Admin</div>
+                                <span class="admin-status-pill"><i class="fa-solid fa-circle"></i> Live</span>
+                            </div>
+                            <div class="admin-dropdown-items">
+                                <a href="{% url 'platform_admin' %}" class="admin-dropdown-item" id="adminDropCommand">
+                                    <div class="admin-item-icon" style="background: rgba(79, 70, 229, 0.15); color: var(--primary-500);">
+                                        <i class="fa-solid fa-gauge-high"></i>
+                                    </div>
+                                    <div class="admin-item-info">
+                                        <div class="admin-item-name">Command Center</div>
+                                        <div class="admin-item-desc">KPIs, users, jobs & contracts</div>
+                                    </div>
+                                </a>
+
+                                <a href="{% url 'admin_gateway' %}?stay=1" class="admin-dropdown-item" id="adminDropGateway">
+                                    <div class="admin-item-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--emerald-500);">
+                                        <i class="fa-solid fa-key"></i>
+                                    </div>
+                                    <div class="admin-item-info">
+                                        <div class="admin-item-name">Admin Portal Hub</div>
+                                        <div class="admin-item-desc">Authentication & security gateway</div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+                                <div class="admin-dropdown-footer" style="color: #10B981;">
+                                    <i class="fa-solid fa-circle-check"></i> Staff Verified: <strong>@{{ user.username }}</strong>
+                                </div>
+                            {% elif user.is_authenticated %}
+                                <div class="admin-dropdown-footer" style="color: var(--amber-500);">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Signed in as @{{ user.username }} (Staff required)
+                                </div>
+                            {% else %}
+                                <div class="admin-dropdown-footer" style="color: var(--text-muted);">
+                                    <i class="fa-solid fa-lock"></i> Staff credentials required for full access
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated %}
+                        {% if user.is_client %}
+                            <a href="{% url 'create_job' %}" class="btn btn-emerald btn-sm" id="btnPostJob">
+                                <i class="fa-solid fa-plus"></i> Post a Job
+                            </a>
+                        {% endif %}
+
+                        <!-- In-App Notification Bell & Dropdown -->
+                        <div class="notif-nav-dropdown-wrapper" id="notifNavDropdown">
+                            <a href="{% url 'notifications_list' %}" class="icon-badge-wrapper" title="Notifications" id="navNotifications">
+                                <i class="fa-solid fa-bell"></i>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="notification-count">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                            <div class="notif-dropdown-menu" id="notifDropdownMenu">
+                                <div class="notif-dropdown-header">
+                                    <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">
+                                        <i class="fa-solid fa-bell text-primary me-1"></i> Notifications
+                                    </div>
+                                    {% if unread_notifications_count > 0 %}
+                                        <span class="admin-status-pill" style="background: rgba(79, 70, 229, 0.15); color: var(--primary-500);">
+                                            {{ unread_notifications_count }} New
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; flex-direction: column; max-height: 280px; overflow-y: auto;">
+                                    {% for notif in recent_notifications %}
+                                        <a href="{% url 'mark_notification_read' notification_id=notif.id %}" class="notif-dropdown-item {% if not notif.is_read %}unread{% endif %}">
+                                            <div style="font-size: 0.95rem; color: var(--primary-500); margin-top: 2px;">
+                                                {% if notif.notification_type == 'PAYMENT' %}
+                                                    <i class="fa-solid fa-wallet text-emerald"></i>
+                                                {% elif notif.notification_type == 'CONTRACT' %}
+                                                    <i class="fa-solid fa-file-contract"></i>
+                                                {% elif notif.notification_type == 'PROPOSAL' %}
+                                                    <i class="fa-solid fa-paper-plane" style="color: #A78BFA;"></i>
+                                                {% elif notif.notification_type == 'INVITATION' %}
+                                                    <i class="fa-solid fa-envelope-open-text" style="color: #F59E0B;"></i>
+                                                {% else %}
+                                                    <i class="fa-solid fa-bell"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div style="flex: 1; line-height: 1.3;">
+                                                <div style="font-size: 0.82rem; font-weight: 700; color: #fff;">{{ notif.title }}</div>
+                                                <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 1px;">{{ notif.message|truncatechars:65 }}</div>
+                                                <div style="font-size: 0.68rem; color: var(--text-subtle); margin-top: 2px;">{{ notif.created_at|timesince }} ago</div>
+                                            </div>
+                                        </a>
+                                    {% empty %}
+                                        <div style="padding: 1.5rem 1rem; text-align: center; color: var(--text-subtle); font-size: 0.82rem;">
+                                            No notifications yet
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="notif-dropdown-footer">
+                                    <a href="{% url 'notifications_list' %}" style="font-size: 0.78rem; font-weight: 600; color: var(--primary-500); text-decoration: none;">
+                                        View All Notifications <i class="fa-solid fa-chevron-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messaging Unread Bell -->
+                        <a href="{% url 'inbox' %}" class="icon-badge-wrapper" title="Messages" id="navMessages">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            {% if unread_messages_count > 0 %}
+                                <span class="notification-count">{{ unread_messages_count }}</span>
+                            {% endif %}
+                        </a>
+
+                        <!-- User Profile Pill -->
+                        <a href="{% url 'dashboard' %}" class="user-menu-pill" id="navDashboard">
+                            <img src="{{ user.avatar_display }}" alt="{{ user.username }}" class="avatar-img-sm">
+                            <div class="d-none d-md-block" style="line-height: 1.2;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">{{ user.first_name|default:user.username }}</div>
+                                <span class="badge-role {% if user.role == 'FREELANCER' %}badge-freelancer{% elif user.role == 'CLIENT' %}badge-client{% else %}badge-both{% endif %}">
+                                    {{ user.get_role_display|slice:":10" }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'logout' %}" class="btn btn-outline btn-sm" title="Log Out" id="navLogout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline btn-sm" id="navLogin">Log In</a>
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-sm" id="navRegister">Join Free</a>
+                    {% endif %}
+
+                    <!-- Mobile Hamburger Button -->
+                    <button class="mobile-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Overlay & Sliding Menu -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="drawer-header">
+            <a href="{% url 'home' %}" class="brand-logo">
+                <div class="brand-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                <span>LancerPulse</span>
+            </a>
+            <button class="drawer-close" id="drawerClose"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        {% if user.is_authenticated %}
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding: 0.85rem; background: var(--bg-card-hover); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <img src="{{ user.avatar_display }}" alt="{{ user.username }}" class="avatar-img-sm" style="width: 44px; height: 44px;">
+                <div>
+                    <div style="font-weight: 700; color: var(--text-main);">{{ user.get_full_name|default:user.username }}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">@{{ user.username }}</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Mobile Drawer Theme Toggle -->
+        <div style="margin-bottom: 1.25rem;">
+            <button type="button" class="btn btn-outline w-100" id="mobileThemeToggleBtn" style="justify-content: flex-start; gap: 0.75rem;">
+                <i class="fa-solid fa-moon" id="mobileThemeToggleIcon"></i>
+                <span id="mobileThemeToggleText">Switch to Dark / Black Theme</span>
+            </button>
+        </div>
+
+        <ul class="drawer-nav-list">
+            <li class="drawer-nav-item">
+                <a href="{% url 'home' %}"><i class="fa-solid fa-house"></i> Home</a>
+            </li>
+            <li class="drawer-nav-item">
+                <a href="{% url 'job_list' %}"><i class="fa-solid fa-briefcase"></i> Explore Jobs</a>
+            </li>
+            <li class="drawer-nav-item">
+                <a href="{% url 'freelancers' %}"><i class="fa-solid fa-users-viewfinder"></i> Freelancers & Networking</a>
+            </li>
+
+            <li class="drawer-nav-item">
+                <a href="{% url 'admin_gateway' %}" style="color: var(--primary-500); font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+                    <span><i class="fa-solid fa-shield-halved"></i> Admin Panel</span>
+                    <span style="font-size: 0.72rem; background: rgba(79, 70, 229, 0.15); color: var(--primary-500); padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(79, 70, 229, 0.3);">Portal</span>
+                </a>
+            </li>
+
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.is_superuser %}
+                    <li class="drawer-nav-item">
+                        <a href="{% url 'platform_admin' %}" style="color: var(--primary-500); font-weight: 700;">
+                            <i class="fa-solid fa-gauge-high"></i> Command Center
+                        </a>
+                    </li>
+                {% endif %}
+                <li class="drawer-nav-item">
+                    <a href="{% url 'dashboard' %}"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                </li>
+                <li class="drawer-nav-item">
+                    <a href="{% url 'inbox' %}"><i class="fa-solid fa-comment-dots"></i> Messages {% if unread_messages_count > 0 %}<span class="notification-count" style="position: static; margin-left: auto;">{{ unread_messages_count }}</span>{% endif %}</a>
+                </li>
+                <li class="drawer-nav-item">
+                    <a href="{% url 'notifications_list' %}"><i class="fa-solid fa-bell"></i> Notifications {% if unread_notifications_count > 0 %}<span class="notification-count" style="position: static; margin-left: auto;">{{ unread_notifications_count }}</span>{% endif %}</a>
+                </li>
+                <li class="drawer-nav-item">
+                    <a href="{% url 'profile' username=user.username %}"><i class="fa-solid fa-user"></i> My Public Profile</a>
+                </li>
+                <li class="drawer-nav-item">
+                    <a href="{% url 'edit_profile' %}"><i class="fa-solid fa-sliders"></i> Edit Profile</a>
+                </li>
+                {% if user.is_client %}
+                    <li class="drawer-nav-item" style="margin-top: 0.5rem;">
+                        <a href="{% url 'create_job' %}" class="btn btn-emerald w-100"><i class="fa-solid fa-plus"></i> Post a Job</a>
+                    </li>
+                {% endif %}
+                <li class="drawer-nav-item" style="margin-top: 1rem;">
+                    <a href="{% url 'logout' %}" style="color: var(--rose-500);"><i class="fa-solid fa-arrow-right-from-bracket" style="color: var(--rose-500);"></i> Log Out</a>
+                </li>
+            {% else %}
+                <li class="drawer-nav-item" style="margin-top: 1rem;">
+                    <a href="{% url 'login' %}" class="btn btn-outline w-100">Log In</a>
+                </li>
+                <li class="drawer-nav-item">
+                    <a href="{% url 'register' %}" class="btn btn-primary w-100">Create Free Account</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- System Messages & Feedback Alerts -->
+    <div class="container" style="margin-top: 1.25rem;">
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <span><i class="fa-solid fa-info-circle me-2"></i> {{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Main Content Body -->
+    <main style="flex: 1;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Mobile Native Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="{% url 'home' %}" class="mobile-bottom-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'job_list' %}" class="mobile-bottom-item {% if request.resolver_match.url_name == 'job_list' %}active{% endif %}">
+            <i class="fa-solid fa-briefcase"></i>
+            <span>Jobs</span>
+        </a>
+        <a href="{% url 'freelancers' %}" class="mobile-bottom-item {% if request.resolver_match.url_name == 'freelancers' %}active{% endif %}">
+            <i class="fa-solid fa-users"></i>
+            <span>Network</span>
+        </a>
+        <a href="{% url 'inbox' %}" class="mobile-bottom-item {% if request.resolver_match.url_name == 'inbox' or request.resolver_match.url_name == 'conversation_detail' %}active{% endif %}">
+            <i class="fa-solid fa-comment-dots"></i>
+            {% if unread_messages_count > 0 %}
+                <span class="mobile-bottom-badge">{{ unread_messages_count }}</span>
+            {% endif %}
+            <span>Chat</span>
+        </a>
+        <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}" class="mobile-bottom-item {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'login' %}active{% endif %}">
+            <i class="fa-solid fa-user"></i>
+            <span>{% if user.is_authenticated %}Dashboard{% else %}Sign In{% endif %}</span>
+        </a>
+    </nav>
+
+    <!-- Site Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="{% url 'home' %}" class="brand-logo">
+                        <div class="brand-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                        <span>LancerPulse</span>
+                    </a>
+                    <p>The premier global ecosystem connecting elite digital craftsmen, AI engineers, top developers, and ambitious companies to build the future.</p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.25rem;">
+                        <a href="#" class="btn btn-outline btn-sm" style="width: 38px; height: 38px; padding: 0; border-radius: 50%;"><i class="fa-brands fa-github"></i></a>
+                        <a href="#" class="btn btn-outline btn-sm" style="width: 38px; height: 38px; padding: 0; border-radius: 50%;"><i class="fa-brands fa-x-twitter"></i></a>
+                        <a href="#" class="btn btn-outline btn-sm" style="width: 38px; height: 38px; padding: 0; border-radius: 50%;"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#" class="btn btn-outline btn-sm" style="width: 38px; height: 38px; padding: 0; border-radius: 50%;"><i class="fa-brands fa-discord"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="footer-title">Marketplace</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'job_list' %}">Browse All Jobs</a></li>
+                        <li><a href="{% url 'freelancers' %}">Freelancer Directory</a></li>
+                        <li><a href="{% url 'freelancers' %}?skill=Python">Python & AI Talent</a></li>
+                        <li><a href="{% url 'freelancers' %}?skill=React">Frontend Specialists</a></li>
+                        <li><a href="{% url 'freelancers' %}?skill=UI/UX">UI/UX Designers</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-title">Community</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'freelancers' %}">Freelancer Networking</a></li>
+                        <li><a href="{% url 'how_it_works' %}">Escrow & Milestone Security</a></li>
+                        <li><a href="{% url 'how_it_works' %}">Trust & Verification</a></li>
+                        <li><a href="{% url 'how_it_works' %}">Success Stories</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-title">Account</h4>
+                    <ul class="footer-links">
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'dashboard' %}">My Dashboard</a></li>
+                            <li><a href="{% url 'inbox' %}">Messages & Chat</a></li>
+                            <li><a href="{% url 'edit_profile' %}">Profile Settings</a></li>
+                            <li><a href="{% url 'logout' %}">Log Out</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">Log In</a></li>
+                            <li><a href="{% url 'register' %}?role=FREELANCER">Join as Freelancer</a></li>
+                            <li><a href="{% url 'register' %}?role=CLIENT">Hire Top Talent</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>&copy; 2026 LancerPulse Inc. Crafted with Django 6. Built for high performance & mobile agility.</div>
+                <div style="display: flex; gap: 1.5rem;">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Security</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Script -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

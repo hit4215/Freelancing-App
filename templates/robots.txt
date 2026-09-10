@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /messages/
+Disallow: /accounts/profile/edit/
+
+Sitemap: https://lancerpulse.com/sitemap.xml

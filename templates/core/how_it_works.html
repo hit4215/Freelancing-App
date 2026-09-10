@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}How It Works | LancerPulse Freelancing & Networking{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem 5rem;">
+    <div class="text-center" style="max-width: 720px; margin: 0 auto 3.5rem;">
+        <div class="hero-badge"><i class="fa-solid fa-circle-question"></i> Platform Guide</div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+            How <span class="text-gradient">LancerPulse</span> Works
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">
+            A seamless, transparent ecosystem engineered for direct hiring, secure milestone contracts, and collaborative peer-to-peer freelancer networking.
+        </p>
+    </div>
+
+    <!-- Dual Path Grid: For Clients & For Freelancers -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
+        <!-- For Clients -->
+        <div class="card-glass" style="border-color: rgba(16, 185, 129, 0.3);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.2); color: var(--emerald-500); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fa-solid fa-briefcase"></i>
+                </div>
+                <h2 style="color: #fff; font-size: 1.45rem; font-weight: 800;">For Hiring Clients</h2>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--emerald-500);">01</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Post Your Project</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Define scope, deliverables, budget (fixed or hourly), and required tech skills in minutes.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--emerald-500);">02</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Receive & Review Bids</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Compare custom proposals, delivery timelines, portfolios, and reviews from vetted specialists.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--emerald-500);">03</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Chat & Hire</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Direct 1-on-1 messaging to clarify requirements, accept proposals, and initiate active contracts.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--emerald-500);">04</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Approve & Review</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Review deliverables, release payment upon satisfaction, and leave a 5-star public rating.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <a href="{% url 'register' %}?role=CLIENT" class="btn btn-emerald w-100">
+                    Post a Project Now <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- For Freelancers -->
+        <div class="card-glass" style="border-color: rgba(99, 102, 241, 0.3);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(99, 102, 241, 0.2); color: var(--primary-500); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <h2 style="color: #fff; font-size: 1.45rem; font-weight: 800;">For Freelancers & Creators</h2>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-500);">01</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Showcase Your Craft</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Create a high-impact profile with portfolio items, hourly rate, skill badges, and GitHub links.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-500);">02</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Discover & Bid on Work</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Browse high-paying jobs, filter by stack and budget, and submit tailored proposals.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-500);">03</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Network with Peers</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Contact fellow freelancers, partner on co-op bids, subcontract tasks, and build your referral ring.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-500);">04</div>
+                    <div>
+                        <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700;">Deliver & Get Paid</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Complete contracts, earn 5-star testimonials, and boost your Job Success Score to attract inbound clients.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <a href="{% url 'register' %}?role=FREELANCER" class="btn btn-primary w-100">
+                    Join as a Freelancer <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform FAQ -->
+    <div style="max-width: 840px; margin: 0 auto;">
+        <h2 style="font-size: 2rem; font-weight: 800; color: #fff; text-align: center; margin-bottom: 2rem;">Frequently Asked Questions</h2>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="card-glass">
+                <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.5rem;">Can freelancers contact and message each other directly?</h4>
+                <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6;">Yes! Unlike traditional freelancing portals that isolate freelancers, LancerPulse features a dedicated Freelancer Directory where you can message peers, form teams, co-bid on enterprise projects, or mentor one another.</p>
+            </div>
+            <div class="card-glass">
+                <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.5rem;">How are payments and contracts secured?</h4>
+                <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6;">Contracts are created immediately when a client accepts a proposal. Both parties have contract visibility and can track project completion before ratings and payment releases.</p>
+            </div>
+            <div class="card-glass">
+                <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.5rem;">Is the platform optimized for smartphones?</h4>
+                <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6;">Absolutely. LancerPulse is built mobile-first with an off-canvas drawer and a native app-like bottom navigation bar for instant access to Jobs, Network, Chat, and Dashboard on any mobile device.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    container_name: lancerpulse_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=production-docker-secret-key-change-in-env-9831a
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,web
+      - CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+    volumes:
+      - lancerpulse_media:/app/media
+      - lancerpulse_data:/app
+    restart: unless-stopped
+
+volumes:
+  lancerpulse_media:
+  lancerpulse_data:

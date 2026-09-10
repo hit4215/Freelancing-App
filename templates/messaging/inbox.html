@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages & Direct Chat | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 1.25rem 3rem;">
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div class="hero-badge"><i class="fa-solid fa-comments"></i> Direct Messenger</div>
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff;">Conversations & Networking</h1>
+        </div>
+        <a href="{% url 'freelancers' %}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-user-plus"></i> Find Freelancers to Network
+        </a>
+    </div>
+
+    <div class="chat-container">
+        <!-- Sidebar: Conversation List -->
+        <div class="chat-sidebar {% if active_conversation %}d-none-mobile{% endif %}">
+            <div class="chat-sidebar-header">
+                <span style="font-weight: 700; color: #fff; font-size: 1rem;">Recent Chats</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">{{ conversations.count }} total</span>
+            </div>
+
+            <ul class="conversations-list">
+                {% for conv in conversations %}
+                    <li>
+                        <a href="{% url 'conversation_detail' conversation_id=conv.id %}" class="conv-item {% if active_conversation and active_conversation.id == conv.id %}active{% endif %}">
+                            <img src="{{ conv.other_user.avatar_display }}" alt="{{ conv.other_user.username }}" class="conv-avatar">
+                            <div class="conv-content">
+                                <div class="conv-top-row">
+                                    <span class="conv-name">{{ conv.other_user.get_full_name|default:conv.other_user.username }}</span>
+                                    <span class="conv-time">
+                                        {% if conv.last_message %}
+                                            {{ conv.last_message.created_at|date:"M d" }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="conv-last-msg">
+                                    {% if conv.last_message %}
+                                        {% if conv.last_message.sender == user %}You: {% endif %}{{ conv.last_message.body|truncatechars:35 }}
+                                    {% else %}
+                                        Conversation opened
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if conv.unread_count > 0 %}
+                                <span class="notification-count" style="position: static; margin-left: auto;">{{ conv.unread_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                {% empty %}
+                    <li style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted);">
+                        <i class="fa-regular fa-comments" style="font-size: 2.5rem; color: var(--primary-500); margin-bottom: 0.75rem;"></i>
+                        <p style="font-size: 0.9rem;">No conversations yet.</p>
+                        <p style="font-size: 0.8rem; color: var(--text-subtle);">Connect with clients on jobs or reach out to other freelancers to start teaming up!</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            {% if active_conversation and other_user %}
+                <!-- Chat Top Bar -->
+                <div class="chat-header">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <a href="{% url 'inbox' %}" class="btn btn-outline btn-sm d-md-none" style="padding: 0.35rem 0.6rem;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+                        <img src="{{ other_user.avatar_display }}" alt="{{ other_user.username }}" class="avatar-img-sm" style="width: 40px; height: 40px;">
+                        <div>
+                            <div style="font-weight: 700; color: #fff; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem;">
+                                {{ other_user.get_full_name|default:other_user.username }}
+                                <span class="badge-role {% if other_user.role == 'FREELANCER' %}badge-freelancer{% elif other_user.role == 'CLIENT' %}badge-client{% else %}badge-both{% endif %}">
+                                    {{ other_user.get_role_display|slice:":10" }}
+                                </span>
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--text-subtle);">
+                                {{ other_user.headline|default:other_user.location }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if active_conversation.job %}
+                            <a href="{% url 'job_detail' slug=active_conversation.job.slug %}" class="btn btn-outline btn-sm" title="View Related Job">
+                                <i class="fa-solid fa-briefcase"></i> Project
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'profile' username=other_user.username %}" class="btn btn-outline btn-sm">
+                            <i class="fa-solid fa-user"></i> Profile
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Messages Feed -->
+                <div class="chat-messages-pane" id="chatMessagesPane" data-conversation-id="{{ active_conversation.id }}" data-last-id="{% if chat_messages.last %}{{ chat_messages.last.id }}{% else %}0{% endif %}">
+                    {% for msg in chat_messages %}
+                        <div class="message-bubble-row {% if msg.sender == user %}me{% else %}other{% endif %}">
+                            <img src="{{ msg.sender.avatar_display }}" alt="{{ msg.sender.username }}" class="avatar-img-sm" style="width: 28px; height: 28px;">
+                            <div>
+                                <div class="message-bubble">{{ msg.body }}</div>
+                                <div class="message-meta {% if msg.sender == user %}text-end{% endif %}">
+                                    {{ msg.created_at|date:"M d, H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div style="text-align: center; color: var(--text-subtle); margin: auto; padding: 2rem;">
+                            <i class="fa-regular fa-paper-plane" style="font-size: 2rem; color: var(--primary-500); margin-bottom: 0.5rem;"></i>
+                            <p>This is the beginning of your conversation with {{ other_user.get_full_name|default:other_user.username }}.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Chat Input Form -->
+                <div class="chat-input-pane">
+                    <form id="chatForm" action="{% url 'send_message' conversation_id=active_conversation.id %}" method="POST" class="chat-input-form">
+                        {% csrf_token %}
+                        <input type="text" id="chatInput" name="body" class="chat-textarea" placeholder="Type your message..." autocomplete="off" required>
+                        <button type="submit" class="btn btn-primary" style="border-radius: var(--radius-full); width: 44px; height: 44px; padding: 0;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(99, 102, 241, 0.12); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--primary-500); margin-bottom: 1.25rem;">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3 style="color: #fff; font-size: 1.35rem; margin-bottom: 0.5rem;">Select a Conversation</h3>
+                    <p style="max-width: 360px; font-size: 0.92rem;">Choose a conversation from the sidebar, or contact any client or freelancer to collaborate.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

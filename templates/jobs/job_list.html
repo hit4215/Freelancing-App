@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Projects & Freelance Jobs | LancerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem 4rem;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 2rem;">
+        <div class="hero-badge"><i class="fa-solid fa-briefcase"></i> Marketplace</div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">Explore Available Projects</h1>
+        <p style="color: var(--text-muted); font-size: 1rem;">Find contracts matching your skills and submit high-impact proposals directly to clients.</p>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card-glass mb-4" style="padding: 1.5rem;">
+        <form method="GET" action="{% url 'job_list' %}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <!-- Top Search Row -->
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 260px; position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-subtle);"></i>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" style="padding-left: 2.6rem;" placeholder="Search by title, keyword, or skill (e.g. Django, Flutter, AI)...">
+                </div>
+                <div style="width: 200px;">
+                    <select name="category" class="form-control" aria-label="Filter by Category">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-filter"></i> Apply Filters
+                </button>
+                {% if search_query or selected_category or selected_budget_type or selected_experience or selected_status != 'OPEN' %}
+                    <a href="{% url 'job_list' %}" class="btn btn-outline">Reset</a>
+                {% endif %}
+            </div>
+
+            <!-- Filter Badges Row -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+                <!-- Status Filter Options -->
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.82rem; color: var(--text-subtle); font-weight: 600;">Status:</span>
+                    <button type="submit" name="status" value="OPEN" class="skill-tag {% if selected_status == 'OPEN' %}active{% endif %}" style="cursor: pointer; border: none;">
+                        <i class="fa-solid fa-circle-dot text-emerald" style="font-size: 0.7rem;"></i> Open
+                    </button>
+                    <button type="submit" name="status" value="IN_PROGRESS" class="skill-tag {% if selected_status == 'IN_PROGRESS' %}active{% endif %}" style="cursor: pointer; border: none;">
+                        <i class="fa-solid fa-spinner text-amber" style="font-size: 0.7rem;"></i> In Progress
+                    </button>
+                    <button type="submit" name="status" value="COMPLETED" class="skill-tag {% if selected_status == 'COMPLETED' %}active{% endif %}" style="cursor: pointer; border: none;">
+                        <i class="fa-solid fa-circle-check text-primary" style="font-size: 0.7rem;"></i> Completed
+                    </button>
+                    <button type="submit" name="status" value="ALL" class="skill-tag {% if selected_status == 'ALL' %}active{% endif %}" style="cursor: pointer; border: none;">
+                        All Statuses
+                    </button>
+                </div>
+
+                <!-- Budget Type Options -->
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.82rem; color: var(--text-subtle); font-weight: 600;">Payment:</span>
+                    <button type="submit" name="budget_type" value="" class="skill-tag {% if not selected_budget_type %}active{% endif %}" style="cursor: pointer; border: none;">All</button>
+                    <button type="submit" name="budget_type" value="FIXED" class="skill-tag {% if selected_budget_type == 'FIXED' %}active{% endif %}" style="cursor: pointer; border: none;">Fixed Price</button>
+                    <button type="submit" name="budget_type" value="HOURLY" class="skill-tag {% if selected_budget_type == 'HOURLY' %}active{% endif %}" style="cursor: pointer; border: none;">Hourly Rate</button>
+                </div>
+
+                <!-- Sorting Dropdown -->
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 0.82rem; color: var(--text-subtle); font-weight: 600;">Sort By:</span>
+                    <select name="sort" onchange="this.form.submit()" class="form-control" style="width: auto; padding: 0.4rem 2rem 0.4rem 0.8rem; font-size: 0.85rem;" aria-label="Sort projects">
+                        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="budget_high" {% if selected_sort == 'budget_high' %}selected{% endif %}>Highest Budget</option>
+                        <option value="budget_low" {% if selected_sort == 'budget_low' %}selected{% endif %}>Lowest Budget</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Jobs Counter -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.95rem; color: var(--text-muted);">
+            Showing <strong style="color: #fff;">{{ page_obj.paginator.count }}</strong> available jobs
+        </div>
+        {% if user.is_authenticated and user.is_client %}
+            <a href="{% url 'create_job' %}" class="btn btn-emerald btn-sm">
+                <i class="fa-solid fa-plus"></i> Post a Job
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Jobs Grid -->
+    <div class="job-grid">
+        {% for job in page_obj %}
+            <div class="card-glass card-interactive job-card">
+                <div>
+                    <div class="job-header">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.35rem;">
+                                <span class="badge-role badge-client">
+                                    {{ job.category.name|default:"General" }}
+                                </span>
+                                <span class="admin-badge {% if job.status == 'OPEN' %}badge-open{% elif job.status == 'IN_PROGRESS' %}badge-in_progress{% elif job.status == 'COMPLETED' %}badge-completed{% else %}badge-closed{% endif %}" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;">
+                                    {% if job.status == 'OPEN' %}
+                                        <i class="fa-solid fa-circle-dot text-emerald"></i>
+                                    {% elif job.status == 'IN_PROGRESS' %}
+                                        <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                                    {% elif job.status == 'COMPLETED' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-lock"></i>
+                                    {% endif %}
+                                    {{ job.get_status_display }}
+                                </span>
+                            </div>
+                            <h2 class="job-title">
+                                <a href="{% url 'job_detail' slug=job.slug %}">{{ job.title }}</a>
+                            </h2>
+                        </div>
+                        <div class="job-budget">{{ job.budget_display }}</div>
+                    </div>
+
+                    <p class="job-desc mt-2">{{ job.description }}</p>
+
+                    <div class="skills-wrap mt-2">
+                        {% for skill in job.skills.all %}
+                            <span class="skill-tag">{{ skill.name }}</span>
+                        {% empty %}
+                            <span class="skill-tag">General Tech</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="job-meta-row" style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div class="d-flex align-center gap-2" style="flex-wrap: wrap;">
+                        <span class="job-meta-item"><i class="fa-regular fa-clock"></i> {{ job.deadline_days }} days</span>
+                        <span class="job-meta-item"><i class="fa-solid fa-paper-plane"></i> {{ job.proposal_count }} proposals</span>
+                        <span class="job-meta-item"><i class="fa-solid fa-building"></i> {{ job.client.company_name|default:job.client.username }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        {% if user.is_authenticated %}
+                            <form method="POST" action="{% url 'toggle_save_job' slug=job.slug %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.65rem;" title="{% if job.id in saved_job_ids %}Remove Bookmark{% else %}Save Job{% endif %}">
+                                    <i class="{% if job.id in saved_job_ids %}fa-solid text-emerald{% else %}fa-regular{% endif %} fa-bookmark"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'job_detail' slug=job.slug %}" class="btn btn-primary btn-sm">
+                            View & Apply <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="card-glass text-center" style="grid-column: 1 / -1; padding: 4rem 2rem;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: var(--primary-500); margin-bottom: 1.25rem;"></i>
+                <h3 style="font-size: 1.4rem; color: #fff;">No matching projects found</h3>
+                <p class="text-muted" style="max-width: 420px; margin: 0.5rem auto 1.5rem;">Try adjusting your keywords or clearing the category filters to discover more opportunities.</p>
+                <a href="{% url 'job_list' %}" class="btn btn-primary btn-sm">Clear All Filters</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem;">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            
+            <span class="btn btn-ghost btn-sm" style="color: var(--text-muted);">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-outline btn-sm">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
